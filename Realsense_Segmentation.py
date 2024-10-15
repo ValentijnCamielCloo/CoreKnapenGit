@@ -3,7 +3,6 @@ import re
 from datetime import datetime
 import open3d as o3d
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Folder where scans are stored
 folder_path = "output"
@@ -31,6 +30,40 @@ def get_latest_scan(folder_path):
 
     return latest_scan
 
+# Function to create a grid on the X-Y plane
+def create_grid(size=10.0, n_lines=100):
+    lines = []
+    for i in range(n_lines):
+        coord = -size + i * (2 * size / (n_lines - 1))
+        lines.append([[-size, coord, 0], [size, coord, 0]])  # Parallel to X-axis
+        lines.append([[coord, -size, 0], [coord, size, 0]])  # Parallel to Y-axis
+    
+    # Create line set for grid
+    grid_points = np.array([point for line in lines for point in line])
+    grid_lines = np.array([[2 * i, 2 * i + 1] for i in range(len(lines))])
+    line_set = o3d.geometry.LineSet()
+    line_set.points = o3d.utility.Vector3dVector(grid_points)
+    line_set.lines = o3d.utility.Vector2iVector(grid_lines)
+    line_set.paint_uniform_color([0.8, 0.8, 0.8])  # Light gray grid color
+    return line_set
+
+# Function to create text labels at axis ends
+def create_axis_labels():
+    text_meshes = []
+    text_data = [
+        ("X", [1.2, 0, 0]),  # Label for X-axis
+        ("Y", [0, 1.2, 0]),  # Label for Y-axis
+        ("Z", [0, 0, 1.2]),  # Label for Z-axis
+    ]
+    
+    for text, position in text_data:
+        text_mesh = o3d.geometry.TriangleMesh.create_sphere(radius=0.01)  # Create a small sphere for each label
+        text_mesh.translate(position)
+        text_mesh.paint_uniform_color([1, 0, 0])  # Red color for labels
+        text_meshes.append(text_mesh)
+    
+    return text_meshes
+
 # Get the latest scan file
 latest_scan_file = get_latest_scan(folder_path)
 if latest_scan_file:
@@ -40,17 +73,16 @@ if latest_scan_file:
     # Load the full-resolution point cloud from the latest scan
     pcd = o3d.io.read_point_cloud(ply_path)
 
-    # Apply y-axis filtering to isolate floor points based on height
-    y_values = np.asarray(pcd.points)[:, 1]  # Get y-axis (height) values
-    floor_threshold = -0.2  # Adjust this value based on your scan's floor height
+    # Apply Y-axis filtering to isolate floor points based on real-world height (Y represents height)
+    y_values = np.asarray(pcd.points)[:, 1]  # Get Y-axis values (height in real-world)
+    floor_threshold = 0.1  # Adjust this based on the real-world height of the floor
     floor_indices = np.where(y_values < floor_threshold)[0]
 
-    # Remove floor points based on y-values
+    # Remove floor points based on Y-values
     pcd_without_floor = pcd.select_by_index(floor_indices, invert=True)
-    print(f"Number of points after y-filtered floor removal: {len(pcd_without_floor.points)}")
+    print(f"Number of points after Y-filtered floor removal: {len(pcd_without_floor.points)}")
 
     # Perform improved plane segmentation using RANSAC
-    # Refine distance_threshold to avoid removing angled planes incorrectly
     plane_model, inliers = pcd_without_floor.segment_plane(distance_threshold=0.005,
                                                            ransac_n=3,
                                                            num_iterations=1000)
@@ -77,15 +109,20 @@ if latest_scan_file:
                                                        min_points=min_points_value, 
                                                        print_progress=True))
 
-    # Visualize segmentation
+    # Visualize segmentation using random colors
     max_label = labels.max()
     print(f"Point cloud has {max_label + 1} clusters")
-    colors = plt.get_cmap("tab20")(labels / (max_label if max_label > 0 else 1))
-    colors[labels < 0] = 0  # Unclustered points in black
-    pcd_without_floor.colors = o3d.utility.Vector3dVector(colors[:, :3])
+    colors = np.random.rand(max_label + 1, 3)  # Random colors for each cluster
+    colors = np.vstack([colors, [0, 0, 0]])  # Black color for noise/unlabeled points
+    pcd_colors = colors[labels] if labels.max() > -1 else [[0, 0, 0]] * len(labels)
+    pcd_without_floor.colors = o3d.utility.Vector3dVector(pcd_colors)
 
-    # Visualize the result
-    o3d.visualization.draw_geometries([pcd_without_floor])
+    # Create a grid for the X-Y plane and axis labels
+    grid = create_grid(size=1.0, n_lines=20)
+    axis_labels = create_axis_labels()
+
+    # Visualize the result with grid and axis labels
+    o3d.visualization.draw_geometries([pcd_without_floor, grid, *axis_labels])
 
 else:
     print("No valid scan files found in the folder.")
