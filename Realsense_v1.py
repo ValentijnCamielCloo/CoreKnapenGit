@@ -101,55 +101,55 @@ decimate.set_option(rs.option.filter_magnitude, 2 ** state.decimate)
 colorizer = rs.colorizer()
 
 
-# def mouse_cb(event, x, y, flags, param):
+def mouse_cb(event, x, y, flags, param):
 
-#     if event == cv2.EVENT_LBUTTONDOWN:
-#         state.mouse_btns[0] = True
+    if event == cv2.EVENT_LBUTTONDOWN:
+        state.mouse_btns[0] = True
 
-#     if event == cv2.EVENT_LBUTTONUP:
-#         state.mouse_btns[0] = False
+    if event == cv2.EVENT_LBUTTONUP:
+        state.mouse_btns[0] = False
 
-#     if event == cv2.EVENT_RBUTTONDOWN:
-#         state.mouse_btns[1] = True
+    if event == cv2.EVENT_RBUTTONDOWN:
+        state.mouse_btns[1] = True
 
-#     if event == cv2.EVENT_RBUTTONUP:
-#         state.mouse_btns[1] = False
+    if event == cv2.EVENT_RBUTTONUP:
+        state.mouse_btns[1] = False
 
-#     if event == cv2.EVENT_MBUTTONDOWN:
-#         state.mouse_btns[2] = True
+    if event == cv2.EVENT_MBUTTONDOWN:
+        state.mouse_btns[2] = True
 
-#     if event == cv2.EVENT_MBUTTONUP:
-#         state.mouse_btns[2] = False
+    if event == cv2.EVENT_MBUTTONUP:
+        state.mouse_btns[2] = False
 
-#     if event == cv2.EVENT_MOUSEMOVE:
+    if event == cv2.EVENT_MOUSEMOVE:
 
-#         h, w = out.shape[:2]
-#         dx, dy = x - state.prev_mouse[0], y - state.prev_mouse[1]
+        h, w = out.shape[:2]
+        dx, dy = x - state.prev_mouse[0], y - state.prev_mouse[1]
 
-#         if state.mouse_btns[0]:
-#             state.yaw += float(dx) / w * 2
-#             state.pitch -= float(dy) / h * 2
+        if state.mouse_btns[0]:
+            state.yaw += float(dx) / w * 2
+            state.pitch -= float(dy) / h * 2
 
-#         elif state.mouse_btns[1]:
-#             dp = np.array((dx / w, dy / h, 0), dtype=np.float32)
-#             state.translation -= np.dot(state.rotation, dp)
+        elif state.mouse_btns[1]:
+            dp = np.array((dx / w, dy / h, 0), dtype=np.float32)
+            state.translation -= np.dot(state.rotation, dp)
 
-#         elif state.mouse_btns[2]:
-#             dz = math.sqrt(dx**2 + dy**2) * math.copysign(0.01, -dy)
-#             state.translation[2] += dz
-#             state.distance -= dz
+        elif state.mouse_btns[2]:
+            dz = math.sqrt(dx**2 + dy**2) * math.copysign(0.01, -dy)
+            state.translation[2] += dz
+            state.distance -= dz
 
-#     if event == cv2.EVENT_MOUSEWHEEL:
-#         dz = math.copysign(0.1, flags)
-#         state.translation[2] += dz
-#         state.distance -= dz
+    if event == cv2.EVENT_MOUSEWHEEL:
+        dz = math.copysign(0.1, flags)
+        state.translation[2] += dz
+        state.distance -= dz
 
-#     state.prev_mouse = (x, y)
+    state.prev_mouse = (x, y)
 
 
 cv2.namedWindow(state.WIN_NAME, cv2.WINDOW_AUTOSIZE)
 cv2.resizeWindow(state.WIN_NAME, w, h)
-# cv2.setMouseCallback(state.WIN_NAME, mouse_cb)
+cv2.setMouseCallback(state.WIN_NAME, mouse_cb)
 
 
 def project(v):
@@ -173,65 +173,65 @@ def view(v):
     return np.dot(v - state.pivot, state.rotation) + state.pivot - state.translation
 
 
-# def line3d(out, pt1, pt2, color=(0x80, 0x80, 0x80), thickness=1):
-#     """draw a 3d line from pt1 to pt2"""
-#     p0 = project(pt1.reshape(-1, 3))[0]
-#     p1 = project(pt2.reshape(-1, 3))[0]
-#     if np.isnan(p0).any() or np.isnan(p1).any():
-#         return
-#     p0 = tuple(p0.astype(int))
-#     p1 = tuple(p1.astype(int))
-#     rect = (0, 0, out.shape[1], out.shape[0])
-#     inside, p0, p1 = cv2.clipLine(rect, p0, p1)
-#     if inside:
-#         cv2.line(out, p0, p1, color, thickness, cv2.LINE_AA)
+def line3d(out, pt1, pt2, color=(0x80, 0x80, 0x80), thickness=1):
+    """draw a 3d line from pt1 to pt2"""
+    p0 = project(pt1.reshape(-1, 3))[0]
+    p1 = project(pt2.reshape(-1, 3))[0]
+    if np.isnan(p0).any() or np.isnan(p1).any():
+        return
+    p0 = tuple(p0.astype(int))
+    p1 = tuple(p1.astype(int))
+    rect = (0, 0, out.shape[1], out.shape[0])
+    inside, p0, p1 = cv2.clipLine(rect, p0, p1)
+    if inside:
+        cv2.line(out, p0, p1, color, thickness, cv2.LINE_AA)
 
 
-# def grid(out, pos, rotation=np.eye(3), size=1, n=10, color=(0x80, 0x80, 0x80)):
-#     """draw a grid on xz plane"""
-#     pos = np.array(pos)
-#     s = size / float(n)
-#     s2 = 0.5 * size
-#     for i in range(0, n+1):
-#         x = -s2 + i*s
-#         line3d(out, view(pos + np.dot((x, 0, -s2), rotation)),
-#                view(pos + np.dot((x, 0, s2), rotation)), color)
-#     for i in range(0, n+1):
-#         z = -s2 + i*s
-#         line3d(out, view(pos + np.dot((-s2, 0, z), rotation)),
-#                view(pos + np.dot((s2, 0, z), rotation)), color)
+def grid(out, pos, rotation=np.eye(3), size=1, n=10, color=(0x80, 0x80, 0x80)):
+    """draw a grid on xz plane"""
+    pos = np.array(pos)
+    s = size / float(n)
+    s2 = 0.5 * size
+    for i in range(0, n+1):
+        x = -s2 + i*s
+        line3d(out, view(pos + np.dot((x, 0, -s2), rotation)),
+               view(pos + np.dot((x, 0, s2), rotation)), color)
+    for i in range(0, n+1):
+        z = -s2 + i*s
+        line3d(out, view(pos + np.dot((-s2, 0, z), rotation)),
+               view(pos + np.dot((s2, 0, z), rotation)), color)
 
 
-# def axes(out, pos, rotation=np.eye(3), size=0.075, thickness=2):
-#     """draw 3d axes"""
-#     line3d(out, pos, pos +
-#            np.dot((0, 0, size), rotation), (0xff, 0, 0), thickness)
-#     line3d(out, pos, pos +
-#            np.dot((0, size, 0), rotation), (0, 0xff, 0), thickness)
-#     line3d(out, pos, pos +
-#            np.dot((size, 0, 0), rotation), (0, 0, 0xff), thickness)
+def axes(out, pos, rotation=np.eye(3), size=0.075, thickness=2):
+    """draw 3d axes"""
+    line3d(out, pos, pos +
+           np.dot((0, 0, size), rotation), (0xff, 0, 0), thickness)
+    line3d(out, pos, pos +
+           np.dot((0, size, 0), rotation), (0, 0xff, 0), thickness)
+    line3d(out, pos, pos +
+           np.dot((size, 0, 0), rotation), (0, 0, 0xff), thickness)
 
 
-# def frustum(out, intrinsics, color=(0x40, 0x40, 0x40)):
-#     """draw camera's frustum"""
-#     orig = view([0, 0, 0])
-#     w, h = intrinsics.width, intrinsics.height
+def frustum(out, intrinsics, color=(0x40, 0x40, 0x40)):
+    """draw camera's frustum"""
+    orig = view([0, 0, 0])
+    w, h = intrinsics.width, intrinsics.height
 
-#     for d in range(1, 6, 2):
-#         def get_point(x, y):
-#             p = rs.rs2_deproject_pixel_to_point(intrinsics, [x, y], d)
-#             line3d(out, orig, view(p), color)
-#             return p
+    for d in range(1, 6, 2):
+        def get_point(x, y):
+            p = rs.rs2_deproject_pixel_to_point(intrinsics, [x, y], d)
+            line3d(out, orig, view(p), color)
+            return p
 
-#         top_left = get_point(0, 0)
-#         top_right = get_point(w, 0)
-#         bottom_right = get_point(w, h)
-#         bottom_left = get_point(0, h)
+        top_left = get_point(0, 0)
+        top_right = get_point(w, 0)
+        bottom_right = get_point(w, h)
+        bottom_left = get_point(0, h)
 
-#         line3d(out, view(top_left), view(top_right), color)
-#         line3d(out, view(top_right), view(bottom_right), color)
-#         line3d(out, view(bottom_right), view(bottom_left), color)
-#         line3d(out, view(bottom_left), view(top_left), color)
+        line3d(out, view(top_left), view(top_right), color)
+        line3d(out, view(top_right), view(bottom_right), color)
+        line3d(out, view(bottom_right), view(bottom_left), color)
+        line3d(out, view(bottom_left), view(top_left), color)
 
 
 
@@ -241,7 +241,7 @@ def pointcloud(out, verts, texcoords, color, painter=True):
     distances = np.linalg.norm(verts, axis=1)
     
     # Create a mask to filter out points at a distance of 2 meters or more THIS ONLY WORKS IN THE VISUALIZER NOT THE EXPORT
-    mask = distances < 2.0  # Keep points that are less than 2 meters
+    mask = distances < 0.80  # Keep points that are less than x meters
 
     # Apply the mask to the vertices and texture coordinates
     verts = verts[mask]
@@ -312,15 +312,16 @@ def save_filtered_ply(filename, vertices, texcoords, colors=None):
             f.write("property uchar blue\n")
         
         f.write("end_header\n")
- 
-        # Write vertex and color data
+
+        # Transform coordinates for Cartesian system (swap y and z)
         for i in range(len(vertices)):
-            f.write("{} {} {}".format(vertices[i][0], vertices[i][1], vertices[i][2]))
+            x, y, z = vertices[i]
+            # Apply transformation: y (depth) -> z, z -> y
+            f.write("{} {} {}\n".format(x, z, -y))  # Invert y for correct orientation
+            # Write color data if provided
             if colors is not None:
                 r, g, b = colors[i]
-                f.write(" {} {} {}\n".format(int(r), int(g), int(b)))
-            else:
-                f.write("\n")
+                f.write("{} {} {}\n".format(int(r), int(g), int(b)))
 #ADDED
 
 
@@ -411,9 +412,9 @@ while True:
 
     out.fill(0)
 
-    # grid(out, (0, 0.5, 1), size=1, n=10)
-    # frustum(out, depth_intrinsics)
-    # axes(out, view([0, 0, 0]), state.rotation, size=0.1, thickness=1)
+    grid(out, (0, 0.5, 1), size=1, n=10)
+    frustum(out, depth_intrinsics)
+    axes(out, view([0, 0, 0]), state.rotation, size=0.1, thickness=1)
 
 
 
