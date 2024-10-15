@@ -364,7 +364,7 @@ while True:
         color_data = np.asanyarray(color_frame.get_data()).reshape(-1, 3)
         # Calculate distances and filter points
         distances = np.linalg.norm(verts, axis=1)
-        mask = distances < 2  # Keep points that are less than 1 meter
+        mask = distances < 0.8  # Keep points that are less than 1 meter
         
         # Convert texcoords to pixel positions in the color image
         cw, ch = color_frame.get_width(), color_frame.get_height()  # Assuming 1920x1080
