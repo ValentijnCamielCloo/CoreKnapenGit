@@ -1,6 +1,8 @@
+#manimgl Manim_Visualizer.py SquareToCircle
+
 from manim import *
 
-class MySceneName(Scene):
+class SquareToCircle(Scene):
     def construct(self):
         square = Square()  # Create a square
         circle = Circle()  # Create a circle
