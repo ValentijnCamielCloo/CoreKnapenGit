@@ -16,7 +16,7 @@ if not os.path.exists(merged_folder):
 # Define regex pattern for scan filenames: Scan_number_date_time_filtered.ply
 pattern = re.compile(r"Scan_(\d+)_(\d{8})_(\d{6})_filtered\.ply")
 
-def get_latest_scans(folder_path, n=2):
+def get_latest_scans(folder_path, n=4):
     scans = []
 
     # Iterate through files in the folder
@@ -49,18 +49,18 @@ def load_point_clouds(folder_path, scan_files):
 point_clouds = load_point_clouds(folder_path, latest_scans)
 
 # Function to perform pairwise registration using ICP with progress output
-def pairwise_registration(source, target, threshold=0.02):
-    print(f"Registering point clouds...")
+def pairwise_registration(source, target, threshold=0.1):
+    print("Registering point clouds...")
 
-    # Display a progress bar for the registration process
-    iterations = 2000  # Number of iterations for ICP
-    for i in tqdm(range(iterations), desc="ICP Progress"):
-        # Perform ICP registration step
+    # Use tqdm for overall progress (only run ICP once)
+    with tqdm(total=1, desc="ICP Progress", unit="step") as pbar:
+        # Perform ICP registration
         icp_result = o3d.pipelines.registration.registration_icp(
             source, target, threshold, np.eye(4),
             o3d.pipelines.registration.TransformationEstimationPointToPoint(),
-            o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=i+1)
+            o3d.pipelines.registration.ICPConvergenceCriteria(max_iteration=2000)
         )
+        pbar.update(1)  # Progress bar completes once ICP finishes
     return icp_result.transformation
 
 # Merge the point clouds
@@ -74,7 +74,7 @@ def merge_point_clouds(point_clouds):
         base_pcd += source_pcd
 
     # Optional: Downsample the merged point cloud
-    base_pcd = base_pcd.voxel_down_sample(voxel_size=0.005)
+    base_pcd = base_pcd.voxel_down_sample(voxel_size=0.05)
     return base_pcd
 
 # Merge the point clouds

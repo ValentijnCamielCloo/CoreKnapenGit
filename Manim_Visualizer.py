@@ -1,18 +1,26 @@
+#Voor CMD
+#manim -pql Manim_Visualizer.py VisualizePointCloud --disable_caching
+
+#Voor Manim Sideview
+#, run the add-in, change to new scene, load and wait but it exports automatically mp4 (not prefered)
+
+#manimgl Manim_Visualizer.py VisualizePointCloud
 #manimgl Manim_Visualizer.py SquareToCircle
+#in Manim compiler 
+#checkpoint_paste() #starthiet <Gebruik dit voor tijdelijke scene visualize 
 
 from manim import *
+import open3d as o3d
+import numpy as np
 
 class SquareToCircle(Scene):
     def construct(self):
-        square = Square()  # Create a square
-        circle = Circle()  # Create a circle
-        
-        # Set attributes for the circle
-        circle.set_fill(BLUE, opacity=0.5)
-        circle.set_stroke(BLUE_E, width=4)
-        
-        # Add the square to the scene
-        self.play(Create(square))  # Show creation of square
-        self.wait(1)                # Wait for 1 second
-        self.play(ReplacementTransform(square, circle))  # Transform square into circle
-        self.wait(1)                # Wait for 1 second
+        circle = Circle()
+        circle.set_fill(RED, opacity=0.5)
+        circle.set_stroke(RED_E, width=1)
+
+        self.add(circle)
+
+
+
+
