@@ -34,11 +34,11 @@ def filter_pcd(input_name, output_name, dist_camera, voxel_size=0.02, nb_neighbo
 
     # Define thresholds, invert if points are negative
     if non_zero_points[0, 2] < 0:
-        lowest_threshold = - (dist_camera + 0.05)
-        highest_threshold = - (dist_camera - 0.05)
+        lowest_threshold = - (dist_camera + 0.04)
+        highest_threshold = - (dist_camera - 0.04)
     else:
-        lowest_threshold = dist_camera - 0.05
-        highest_threshold = dist_camera + 0.05
+        lowest_threshold = dist_camera - 0.04
+        highest_threshold = dist_camera + 0.04
 
     # Step 3: Filter points and colors based on z-value (between lowest_threshold and highest_threshold)
     filter_mask = (non_zero_points[:, 2] >= lowest_threshold) & (non_zero_points[:, 2] <= highest_threshold)
@@ -78,12 +78,12 @@ def filter_pcd(input_name, output_name, dist_camera, voxel_size=0.02, nb_neighbo
 
     print(f"Filtered point cloud saved to: {output_file}")
 
-# filter_pcd('out1_08-10', 'filtered_pcd1_08-10', 0.43,0.01)
-#
-#
+# filter_pcd('Scan_31_20241011_105409_filtered', 'filtered_pcd1_11-10', 0.37,0.005)
+# #
+# #
 # input_folder = r'C:\Users\sarah\PycharmProjects\CoreKnapenGit\scans'
-# ply_file_path = os.path.join(input_folder, "out1_08-10.ply")
+# ply_file_path = os.path.join(input_folder, "Scan_31_20241011_105409_filtered.ply")
 # pcd = o3d.io.read_point_cloud(ply_file_path)
 # points = np.asarray(pcd.points)
 # colors = np.asarray(pcd.colors)
-# o3d.visualization.draw_geometries([pcd])
+# # o3d.visualization.draw_geometries([pcd])

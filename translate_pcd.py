@@ -86,3 +86,5 @@ def translate_pcd(input_name, output_name, start_side='Left'):
     return pcd_2d
 
 # translate_pcd('filtered_pcd1_08-10','translated_pcd1_08-10','Left')
+
+
