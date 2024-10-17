@@ -7,9 +7,10 @@ from datetime import datetime
 
 # Step 1: Read the PLY file
 point_cloud = o3d.io.read_point_cloud(r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\scans\Scan_46_20241015_161510_filtered.ply")
+o3d.visualization.draw_geometries([point_cloud])
 
 # Step 3: Voxel downsampling (optional, adjust the voxel size if necessary)
-voxel_size = 0.02  # Adjust voxel size based on your needs
+voxel_size = 0.01  # Adjust voxel size based on your needs
 downsampled_pc = point_cloud.voxel_down_sample(voxel_size=voxel_size)
 
 # Step 4: Estimate normals on the downsampled point cloud
@@ -19,6 +20,7 @@ downsampled_pc.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybri
 downsampled_pc.orient_normals_towards_camera_location(camera_location=[0, 0, 0])
 
 # Step 6: Visualize the downsampled point cloud with oriented normals
+o3d.visualization.draw_geometries([downsampled_pc], point_show_normal=False)
 o3d.visualization.draw_geometries([downsampled_pc], point_show_normal=True)
 
 # Access normals programmatically
