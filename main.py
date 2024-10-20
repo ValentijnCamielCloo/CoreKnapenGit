@@ -5,20 +5,29 @@ def main():
     # Create an instance of the point cloud
     pcd = PointCloud(file_dir_pcd=c.FILE_DIR_PCD, file_name_pcd=c.FILE_NAME_PCD)
 
-    # Load and process the point cloud
+    # Load the point cloud
     pcd.load_pcd()
+    # pcd.visualize()
+
+    # Downsample the point cloud
+    pcd.voxel_downsample(voxel_size=c.VOXEL_SIZE)
+    # pcd.visualize()
+    # pcd.visualize(save_as_png=True, filename='downsampled')
+
+    # Cluster point cloud based on normals
+    pcd.estimate_and_orient_normals()
+    pcd.cluster_based_on_normals()
+    # pcd.visualize()
+
+    # Remove outliers from the clusters
+    pcd.remove_outliers_radius(nb_points=c.NB_POINTS, radius=c.RADIUS)
     pcd.visualize()
-    # pcd.estimate_and_orient_normals()
-    #
-    # # Cluster based on normals
-    # clusters = pcd.cluster_based_on_normals(max_k=10)
-    #
-    # # Filter non-upward clusters
-    # non_upward_clusters = pcd.filter_non_upward_clusters(clusters)
-    #
-    # # Save and visualize the non-upward clusters
-    # pcd.save_clusters(non_upward_clusters)
-    # pcd.visualize_clusters(non_upward_clusters)
+
+    # Calculate mean normal vectors for each cluster
+    mean_normals = pcd.calculate_mean_normal_vector()
+
+
+
 
 if __name__ == '__main__':
     main()
