@@ -70,8 +70,8 @@ if latest_scan_file:
     print(f"Latest scan file: {latest_scan_file}")
     
     #ADDED
-    folder_path = "merged"
-    latest_scan_file = "Scan_48_20241015_161604_merged"
+    # folder_path = "merged"
+    # latest_scan_file = "Scan_48_20241015_161604_merged"
     #ADDED
 
     ply_path = os.path.join(folder_path, latest_scan_file)

@@ -2,14 +2,14 @@ import open3d as o3d    #Version 0.18.0
 import numpy as np      #Version 1.26.4
 import copy
 import os
-from functions_registration import *
+from xx_functions_registration import *
 
 # Define the folder path where your PLY files are stored
-folder_path = r'C:\Users\sarah\PycharmProjects\CoreKnapenGit\out_01-10'
+folder_path = r'C:\Users\sarah\PycharmProjects\CoreKnapenGit\out_01-10' #AANPASSEN
 
 # Specify the PLY file names
-ply_file_source = os.path.join(folder_path, "point_cloud_20241001_132244.ply")
-ply_file_target = os.path.join(folder_path, "point_cloud_20241001_132325.ply")
+ply_file_source = os.path.join(folder_path, "point_cloud_20241001_132244.ply") #AANPASSEN
+ply_file_target = os.path.join(folder_path, "point_cloud_20241001_132325.ply") #AANPASSEN
 
 # Read the point clouds with Open3D
 source_pcd = o3d.io.read_point_cloud(ply_file_source)
