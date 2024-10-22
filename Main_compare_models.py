@@ -5,14 +5,14 @@ from compare_model import *
 
 # Filter the point cloud, only keep point within certain distance from scanner
 # For further filtering we use voxel downsampling and statistical outlier removal
-filter_pcd('point_cloud_20241001_132244', 'filtered_pcd', 1.4, 1.7)
+filter_dist_pcd = filter_pcd('Scan_31_20241011_105409_filtered', 'filtered_pcd1_11-10', 0.37, 0.005)
 
 # Move all the points to one plane and let the corner (left or right) start in the origin (0,0)
-translate_pcd('filtered_pcd','translated_pcd_right','Right')
+translate_pcd('filtered_pcd1_11-10','translated_pcd1_11-10','Right')
 
 # Create a mesh from the point cloud
-pcd_to_mesh('translated_pcd_right', 'mesh_from_pcd_right')
+pcd_to_mesh('translated_pcd1_11-10', 'mesh_from_pcd1_11-10')
 
 # Compare the mesh from the scan to the final model
 # Output: percentage built and m2 to be built
-compare_model('test_right', 'mesh_from_pcd_right')
+compare_model('composite_meshes_right_11-10', 'mesh_from_pcd1_11-10', 'visualizing_model1_08-10')

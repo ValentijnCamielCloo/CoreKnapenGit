@@ -49,7 +49,7 @@ def pcd_to_mesh(input_name, output_name):
     print("PCD Detail: {}".format(point_cloud))
     print("Mesh Details: {}".format(mesh))
 
-    # Visualize the repaired mesh
+    # Visualize the repaired mesh after flipping
     o3d.visualization.draw_geometries([mesh])
 
     # Define the file name for the saved mesh

@@ -36,7 +36,6 @@ source_inlier_cloud = source_down.select_by_index(ind)
 # o3d.visualization.draw_geometries([source_inlier_cloud])
 point = np.asarray(source_inlier_cloud.points)
 print("Points:", point)
-print('hoi')
 
 print("Statistical oulier removal: Target")
 cl, ind = target_down.remove_statistical_outlier(nb_neighbors=20,
