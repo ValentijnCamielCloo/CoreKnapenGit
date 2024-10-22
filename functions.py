@@ -3,11 +3,13 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import re
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, DBSCAN
 from kneed import KneeLocator
 from datetime import datetime
 import pyvista as pv
 import random
+
+from trimesh.transformations import rotation_matrix
 
 
 def elbow_method(normals, save_path, max_k=10):
@@ -38,32 +40,19 @@ def elbow_method(normals, save_path, max_k=10):
 
     return optimal_k
 
-
-def visualize_clusters(clusters, color=True):
+def compute_rotation_matrix(source_vector, target_vector):
+    """ Find the rotation matrix that aligns vec1 to vec2
+    :param vec1: A 3d "source" vector
+    :param vec2: A 3d "destination" vector
+    :return mat: A transform matrix (3x3) which when applied to vec1, aligns it with vec2.
     """
-    Visualize the clusters in the point cloud.
-
-    Parameters:
-    clusters (list): A list of clustered point clouds to visualize.
-    color (bool): Whether to randomly color each cluster.
-    """
-    if clusters:
-        plotter = pv.Plotter()
-        for i, cluster in enumerate(clusters):
-            pcd_points = np.asarray(cluster.points)
-            # Create a PyVista PolyData object for visualization
-            cloud = pv.PolyData(pcd_points)
-
-            if color:
-                colors = np.random.rand(len(pcd_points), 3)  # Random RGB colors for each cluster
-                plotter.add_mesh(cloud, color=colors[i % len(colors)])  # Assign color to the cluster
-            else:
-                plotter.add_mesh(cloud)
-
-        plotter.show()
-
-    else:
-        print("No cluster data to visualize.")
+    a, b = (source_vector / np.linalg.norm(source_vector)).reshape(3), (target_vector / np.linalg.norm(target_vector)).reshape(3)
+    v = np.cross(a, b)
+    c = np.dot(a, b)
+    s = np.linalg.norm(v)
+    kmat = np.array([[0, -v[2], v[1]], [v[2], 0, -v[0]], [-v[1], v[0], 0]])
+    rotation_matrix = np.eye(3) + kmat + kmat.dot(kmat) * ((1 - c) / (s ** 2))
+    return rotation_matrix
 
 
 class PointCloud:
@@ -188,6 +177,7 @@ class PointCloud:
         radius (float): radius of the sphere that will be used for counting the neighbors
         """
         if self.pcd:
+            print('Removing outliers...')
             if type(self.pcd) is list:
                 clean_pcd = []
                 for pc in self.pcd:
@@ -206,44 +196,42 @@ class PointCloud:
         else:
             print("No point cloud data to filter the outliers.")
 
-    def estimate_and_orient_normals(self, radius=0.1, max_nn=30, camera_location=[0, 0, 0]):
-        """
-        Estimate and orient normals for the point cloud.
-        """
-        if self.pcd is not None:
-            print("Estimating normals...")
-            self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=radius, max_nn=max_nn))
-            normals = self.pcd.orient_normals_towards_camera_location(camera_location=camera_location)
-            return normals
-        else:
-            print("No point cloud data to estimate normals.")
-
-    def cluster_based_on_normals(self, max_k=10, remove_ground=True, upward_threshold=0.5):
+    def cluster_kmeans_normals(self, max_k=10, remove_ground=True, upward_threshold=0.5):
         """
         Cluster the point cloud based on normals using KMeans and the elbow method.
         """
-        if self.pcd is not None:
-            # Step 1: Access the normals
+        if self.pcd:
+            if type(self.pcd) is list:
+                # If the list contains 1 point cloud, get this pc and move on
+                if len(self.pcd) == 1:
+                    self.pcd = self.pcd[0]
+                else:
+                    print('use DBSCAN clustering and filtering to end up with only one point cloud')
+
+            # Access the normals
+            print("Estimating normals...")
+            self.pcd.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+            normals = self.pcd.orient_normals_towards_camera_location(camera_location=[0, 0, 0])
             normals = np.asarray(self.pcd.normals)
 
-            # Step 2: Automatically choose the optimal number of clusters
+            # Automatically choose the optimal number of clusters
             n_clusters = elbow_method(normals, self.output_dir, max_k=max_k)
             print(f"Amount of clusters: {n_clusters}")
 
-            # Step 3: Apply KMeans clustering
+            # Apply KMeans clustering
             clustering = KMeans(n_clusters=n_clusters, random_state=0).fit(normals)
 
-            # Step 4: Get cluster labels
+            # Get cluster labels
             labels = clustering.labels_
 
-            # Step 5: Separate points based on the clusters
+            # Separate points based on the clusters
             max_label = labels.max()
             clusters = []
             for i in range(max_label + 1):
                 indices = np.where(labels == i)[0]
                 cluster = self.pcd.select_by_index(indices)
                 clusters.append(cluster)
-                print(f"Cluster {i} has {len(cluster.points)} points.")  # Debug: print number of points in cluster
+                print(f"Cluster {i} has {len(cluster.points)} points.")
 
             if remove_ground:
                 print("Filtering clusters that don't have normals pointing upwards...")
@@ -256,18 +244,55 @@ class PointCloud:
                         non_upward_clusters.append(cluster)
 
                 clusters = non_upward_clusters  # Update clusters to only keep non-upward clusters
-                print(
-                    f"Number of clusters after filtering: {len(clusters)}")  # Debug: print number of clusters after filtering
-
-            # Save each cluster as a separate PLY file
-            for i, cluster in enumerate(clusters):
-                if len(cluster.points) > 0:  # Debug: check if the cluster has points
-                    print(f"Saving cluster {i} with {len(cluster.points)} points.")  # Debug: print saving message
-                    self._save_ply(f"cluster_{i}", point_cloud=cluster)
-                else:
-                    print(f"Cluster {i} is empty, skipping save.")  # Debug: skip empty clusters
+                print(f"Number of clusters after filtering: {len(clusters)}")
 
             self.pcd = clusters
+            self._save_ply('cluster_kmeans')
+
+        else:
+            print("No point cloud data for clustering.")
+
+    def cluster_dbscan(self, eps, min_samples, remove_small_clusters=True, min_points=20):
+        """
+        Cluster the point cloud using DBSCAN, which does not require specifying the number of clusters.
+
+        Parameters:
+        - eps (float): Maximum distance between two points to be considered in the same cluster.
+        - min_samples (int): Minimum number of points in a neighborhood to form a core point.
+        - remove_small_clusters (bool): Whether to remove small clusters.
+        """
+        if self.pcd:
+            # Access the XYZ coordinates
+            points = np.asarray(self.pcd.points)
+
+            # Apply DBSCAN clustering
+            clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(points)
+
+            # Get cluster labels
+            labels = clustering.labels_
+            max_label = labels.max()
+            clusters = []
+
+            for i in range(max_label + 1):
+                indices = np.where(labels == i)[0]
+                cluster = self.pcd.select_by_index(indices)
+                clusters.append(cluster)
+                print(f"Cluster {i} has {len(cluster.points)} points.")
+
+            if remove_small_clusters:
+                print(f"Number of clusters before filtering: {len(clusters)}")
+                # Initialize an empty list to store valid clusters
+                filtered_clusters = []
+                for cluster in clusters:
+                    if len(cluster.points) > min_points:
+                        filtered_clusters.append(cluster)
+
+                # Update the clusters list with only the filtered clusters
+                clusters = filtered_clusters
+                print(f"Number of clusters after filtering: {len(clusters)}")
+
+            self.pcd = clusters
+            self._save_ply('cluster_DBSCAN')
 
         else:
             print("No point cloud data for clustering.")
@@ -302,11 +327,11 @@ class PointCloud:
 
     def _save_ply(self, file_name, point_cloud=None):
         """
-        Save the list of point clouds with the given file name to PLY files.
+        Save the point cloud(s) with the given file name to PLY files.
 
         Parameters:
         file_name_prefix (str): The prefix for each PLY file name.
-        point_cloud (list): A list of point cloud clusters to be saved. If None, saves the main point cloud.
+        point_cloud (list or PointCloud): A PointCloud or list of PointCloud clusters to be saved. If None, saves the main point cloud.
         """
 
         if point_cloud is None:
@@ -325,89 +350,130 @@ class PointCloud:
             print("No point cloud(s) to save.")
 
 
-
-class ClustersPCD:
-    def __init__(self, clusters):
+class Mesh:
+    def __init__(self, file_dir_mesh, file_name_mesh_list):
         """
-        Initialize the ClustersPCD with clustered point clouds.
-
-        Parameters:
-        clusters (list): A list of clustered point clouds to manipulate.
+        Initialize the Mesh class with the given directory and list of mesh filenames.
+        Automatically find the latest 'ProgressPilot' output directory to store results.
         """
-        self.clusters = clusters  # Store the clusters in an instance variable
+        self.file_dir_mesh = file_dir_mesh
+        self.file_name_mesh_list = file_name_mesh_list  # List of mesh filenames
+        self.meshes = []
 
-    def visualize(self, color=True):
-        """
-        Visualize the clusters in the point cloud.
+        # Find the latest created output directory inside 'ProgressPilot'
+        main_dir = "ProgressPilot"
+        if not os.path.exists(main_dir):
+            os.makedirs(main_dir)
+            print(f"Main directory created: {main_dir}")
 
-        Parameters:
-        color (bool): Whether to randomly color each cluster.
+        # Get all directories in 'ProgressPilot'
+        all_items = os.listdir(main_dir)
+        progress_dirs = [item for item in all_items if os.path.isdir(os.path.join(main_dir, item))]
+
+        # Find the most recent directory based on timestamp
+        if progress_dirs:
+            progress_dirs.sort(key=lambda d: os.path.getmtime(os.path.join(main_dir, d)), reverse=True)
+            self.output_dir = os.path.join(main_dir, progress_dirs[0])
+            print(f"Using the latest output directory: {self.output_dir}")
+        else:
+            raise Exception(f"No directories found in {main_dir}. Ensure that you first create a PointCloud project.")
+
+    def load_meshes(self):
         """
-        if self.clusters:
+        Load multiple meshes from the provided list of .ply files and store them in a list.
+        """
+        print(f"Loading mesh files from {self.file_dir_mesh}")
+        for file_name in self.file_name_mesh_list:
+            file_path = os.path.join(self.file_dir_mesh, file_name)
+            if os.path.exists(file_path):
+                print(f"Loading mesh: {file_path}")
+                mesh = pv.read(str(file_path))
+
+                self.meshes.append(mesh)
+            else:
+                print(f"File {file_name} does not exist in the directory {self.file_dir_mesh}.")
+
+        self._save_meshes('model_mesh')
+
+        return self.meshes
+
+    def visualize(self, save_as_png=False, filename='mesh_visualization'):
+        """
+        Visualize the loaded meshes and optionally save the visualization as a PNG file.
+        """
+        if self.meshes:
             plotter = pv.Plotter()
-            for i, cluster in enumerate(self.clusters):
-                pcd_points = np.asarray(cluster.points)
-                # Create a PyVista PolyData object for visualization
-                cloud = pv.PolyData(pcd_points)
 
-                if color:
-                    colors = np.random.rand(len(pcd_points), 3)  # Random RGB colors for each cluster
-                    plotter.add_mesh(cloud, color=colors[i % len(colors)])  # Assign color to the cluster
-                else:
-                    plotter.add_mesh(cloud)
+            for mesh in self.meshes:
+                # Generate a random color for each mesh
+                color = np.random.rand(3)  # Random color [R, G, B]
+                plotter.add_mesh(mesh, color=color)
 
             plotter.show()
+
+            if save_as_png:
+                filename = f'{filename}.png'
+                plotter.screenshot(filename)
+                print(f"Mesh visualization saved as {filename}")
+
         else:
-            print("No cluster data to visualize.")
+            print("No meshes loaded to visualize.")
 
-    def remove_outliers(self, nb_points=12, radius=0.02):
+    def _save_meshes(self, file_name="mesh"):
         """
-        Remove outliers from clusters using radius outlier removal.
-
-        Parameters:
-        nb_points (int):
-        radius (float):
+        Save all loaded meshes to the latest output directory with a given filename prefix.
         """
+        if self.meshes:
+            for i, mesh in enumerate(self.meshes):
+                save_path = os.path.join(self.output_dir, f"{file_name}_{i}.ply")
+                mesh.save(save_path)
+                print(f"Saved mesh {i} as {save_path}")
+        else:
+            print("No meshes to save.")
 
-        cleaned_clusters = []
-        for cluster in self.clusters:
-            pcd = o3d.geometry.PointCloud()
-            pcd.points = o3d.utility.Vector3dVector(np.asarray(cluster.points))
 
-            # Outlier Removal
-            cl, ind = pcd.remove_radius_outlier(nb_points, radius)
-            cleaned_cluster = pcd.select_by_index(ind)
-            cleaned_clusters.append(cleaned_cluster)
-
-        self.clusters = cleaned_clusters  # Update clusters with cleaned data
-
-    def calculate_mean_normal_vector(self):
+class ComparePCDMesh:
+    def __init__(self, point_clouds, meshes):
         """
-        Calculate the mean normal vector for each cluster.
+        Initialize the Compare class with already loaded point clouds and meshes.
 
-        Returns:
-        list: A list of mean normal vectors for each cluster.
+        :param point_clouds: A list of PointClouds.
+        :param meshes: A list of Meshes.
         """
-        mean_normals = []
-        for i, cluster in enumerate(self.clusters):
-            cluster.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
-            normals = np.asarray(cluster.normals)
-            mean_normal = np.mean(normals, axis=0)  # Compute mean normal
-            mean_normals.append(mean_normal)
-            print(f"Mean normal vector of cluster {i}: {mean_normals[i]}")
-        return mean_normals
+        self.pcd = point_clouds
+        self.meshes = meshes
 
-    def _save_ply(self, file_name, point_cloud=None):
-        """
-        Save the point cloud with the given file name to a PLY file.
-        """
-        if point_cloud is None:
-            point_cloud = self.pcd
+    def rotate_pcd(self):
+        if self.pcd:
 
-        if point_cloud is not None:
-            save_path = os.path.join(self.output_dir, f"{file_name}.ply")
-            o3d.io.write_point_cloud(save_path, point_cloud)
-            # print(f"Point cloud saved as {save_path}")
+            # Compute mean normal in one point cloud cluster
+            if type(self.pcd) is not list:
+                print('was not a list')
+                self.pcd = list(self.pcd)
+            else:
+                print('was already a list')
 
+            pc = self.pcd[0]
+            normals_pc = np.asarray(pc.normals)
+            normal_source = np.mean(normals_pc, axis=0)
 
-# class Mesh:
+            # Compute mean normal in one model mesh
+            if type(self.meshes) is not list:
+                self.meshes = list(self.meshes)
+
+            mesh = self.meshes[0]
+            normals_mesh = mesh.point_data['Normals']
+            normal_target = np.mean(normals_mesh, axis=0)
+
+            rot_matrix = compute_rotation_matrix(normal_source, normal_target)
+            print(f"Rotation Matrix:\n {rot_matrix}")
+
+            for pc in self.pcd:
+                points = np.asarray(pc.points)
+                normals = np.asarray(pc.normals)
+
+                rotated_points = points @ rot_matrix.T
+                rotated_normals = normals @ rot_matrix.T
+
+    def visualize(self):
+        pass
