@@ -37,14 +37,6 @@ normals2 = mesh2.point_data['Normals']
 # Mean normal
 mean_normal1_model = np.mean(normals1, axis=0)
 
-# # Print the normals for both meshes
-# print("Normals for Mesh 1:")
-# print(normals1)
-#
-# print("\nNormals for Mesh 2:")
-# print(normals2)
-
-
 
 # Load segmented point clouds from scan
 pcd_1 = o3d.io.read_point_cloud(
@@ -178,22 +170,42 @@ while True:
         point_cloud2.points = o3d.utility.Vector3dVector(rotated_points2)
         point_cloud2.normals = o3d.utility.Vector3dVector(rotated_normals2)
 
-    # Step 12: Save the rotated point clouds
-    o3d.io.write_point_cloud(
-        r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\segmented_point_clouds\segmentation_1015_1714\rotated_cluster_0.ply",
-        point_cloud1)
-    o3d.io.write_point_cloud(
-        r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\segmented_point_clouds\segmentation_1015_1714\rotated_cluster_1.ply",
-        point_cloud2)
+    # # Step 12: Save the rotated point clouds
+    # o3d.io.write_point_cloud(
+    #     r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\segmented_point_clouds\segmentation_1015_1714\rotated_cluster_0.ply",
+    #     point_cloud1)
+    # o3d.io.write_point_cloud(
+    #     r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\segmented_point_clouds\segmentation_1015_1714\rotated_cluster_1.ply",
+    #     point_cloud2)
 
 
 # Find minimum corner point
-min_x_value = min(np.min(rotated_points1[:, 0]), np.min(rotated_points2[:, 0]))
-min_y_value = min(np.min(rotated_points1[:, 1]), np.min(rotated_points2[:, 1]))
-min_z_value = min(np.min(rotated_points1[:, 2]), np.min(rotated_points2[:, 2]))
+# min_x_value = min(np.min(rotated_points1[:, 0]), np.min(rotated_points2[:, 0]))
+# min_y_value = min(np.min(rotated_points1[:, 1]), np.min(rotated_points2[:, 1]))
+# min_z_value = min(np.min(rotated_points1[:, 2]), np.min(rotated_points2[:, 2]))
 
+pcd = [point_cloud1, point_cloud2]
+
+min_x_values = []
+min_y_values = []
+min_z_values = []
+for pc in pcd:
+    min_point = pc.get_min_bound()
+
+    min_x_values.append(min_point[0])
+    min_y_values.append(min_point[1])
+    min_z_values.append(min_point[2])
+
+min_x = min(min_x_values)
+min_y = min(min_y_values)
+min_z = min(min_z_values)
+
+print(f'min x: {min_x}')
+print(f'min y: {min_y}')
+print(f'min z: {min_z}')
 # New corner point
-corner_point = np.array([min_x_value, min_y_value, min_z_value])
+corner_point = np.array([min_x, min_y, min_z])
+print(f'min bound: {corner_point}')
 
 # Translate both point clouds so the new corner point is at the origin
 translation_vector = -corner_point
@@ -215,9 +227,9 @@ plotter.add_mesh(mesh1, color='lightgrey')
 plotter.add_mesh(mesh2, color='lightgrey')
 plotter.show()
 
-# Final visualization after translation
-o3d.visualization.draw_geometries([point_cloud1, point_cloud2], point_show_normal=True)
+# # Final visualization after translation
+# o3d.visualization.draw_geometries([point_cloud1, point_cloud2], point_show_normal=True)
 
-# Save translated point clouds
-o3d.io.write_point_cloud(r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\translated_point_clouds\translated_cluster_3-0_1510.ply", point_cloud1)
-o3d.io.write_point_cloud(r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\translated_point_clouds\translated_cluster_3-1_1510.ply", point_cloud2)
+# # Save translated point clouds
+# o3d.io.write_point_cloud(r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\translated_point_clouds\translated_cluster_3-0_1510.ply", point_cloud1)
+# o3d.io.write_point_cloud(r"C:\Users\sarah\PycharmProjects\CoreKnapenGit\translated_point_clouds\translated_cluster_3-1_1510.ply", point_cloud2)

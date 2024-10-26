@@ -27,7 +27,6 @@ def segment_bricks(mesh_file, pcd_file, points_per_brick):
     # Iterate over each component in the mesh
     for i in range(n_components):
         component = surface_mesh.extract_cells([i])
-        print(component)
         if (mean_normal[0] == 0) and (mean_normal[1] == 0):
             print('x and y')
             x_bound, y_bound = component.bounds[:2], component.bounds[2:4]
