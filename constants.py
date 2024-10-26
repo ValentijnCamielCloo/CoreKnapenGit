@@ -1,13 +1,17 @@
 # Point Cloud processing
-FILE_DIR_PCD = r'C:\Users\sarah\PycharmProjects\CoreKnapenGit\scans'
-FILE_NAME_PCD = 'Scan_46_20241015_161510_filtered.ply'
+FILE_NAME_PCD = 'Scan_2_20241017_122833_filtered.ply'
 
 # Voxel downsampling
-VOXEL_SIZE = 0.01
+VOXEL_SIZE = 0.005
 
 # Radius outlier removal
 NB_POINTS = 15
-RADIUS = 0.02
+RADIUS_RADIUS_REMOVAL = 0.015
+
+# Normal outlier removal
+RADIUS_NORMAL_REMOVAL = 0.2
+THRESHOLD_ANGLE = 10.0
+MAX_NN = 30
 
 # DBSCAN clustering
 EPS = 0.02
@@ -15,7 +19,8 @@ MIN_SAMPLES = 15
 MIN_POINTS = 50
 
 # Mesh processing
-FILE_DIR_MESH = r'C:\Users\sarah\PycharmProjects\CoreKnapenGit\comparing_model'
-FILE_NAME_MESH_LIST = ['composite_meshes2-1_15-10.ply', 'composite_meshes2-2_15-10.ply']
+FILE_NAME_MESH_LIST = ['front_23-10.ply', 'left_23-10.ply']
 
 # Comparing Mesh and Point Cloud
+POINTS_PER_BRICK = 15
+FILE_NAME_VIS = 'vis_model_1.ply'
