@@ -16,15 +16,14 @@ def main():
 
     # Remove outliers
     pcd.cluster_kmeans_normals(biggest_cluster=True)
-    pcd.visualize()
     pcd.remove_outliers_radius(nb_points=c.NB_POINTS,radius=c.RADIUS_RADIUS_REMOVAL)
     pcd.visualize()
 
-    # # Initialize the Mesh class with the directory and list of files
-    meshes = Mesh(file_name_mesh_list=c.FILE_NAME_MESH_LIST)
+    # Initialize the Mesh class with the directory and list of files
+    meshes = Mesh()
     meshes.load_meshes()
-    # meshes.visualize()
-    # #
+    meshes.visualize()
+
     # Rotate the point cloud based on normal
     pcd.orientate(meshes.meshes)
     # #
@@ -56,11 +55,11 @@ def main():
     # #
     # Translate point cloud to the origin (0,0)
     pcd.translate()
+    # #
+    # # Check if the normals are pointing to the outside
+    # meshes.visualize_normals()
     #
-    # Check if the normals are pointing to the outside
-    meshes.visualize_normals()
-
-    # # Initialize the ComparePCDMesh class
+    # Initialize the ComparePCDMesh class
     compare = ComparePCDMesh(pcd.pcd, meshes.meshes)
     compare.visualize()
     compare.check_bricks(points_per_brick=c.POINTS_PER_BRICK)

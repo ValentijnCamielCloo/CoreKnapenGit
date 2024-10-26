@@ -10,6 +10,7 @@ import pyvista as pv
 import random
 import csv
 import constants as c
+import pandas as pd
 
 
 def elbow_method(normals, save_path, max_k=10):
@@ -620,12 +621,12 @@ class PointCloud:
 
 
 class Mesh:
-    def __init__(self, file_name_mesh_list):
+    def __init__(self):
         """
-        Initialize the Mesh class with the given directory and list of mesh filenames.
+        Initialize the Mesh class.
         Automatically find the latest 'ProgressPilot' output directory to store results.
+
         """
-        self.file_name_mesh_list = file_name_mesh_list  # List of mesh filenames
         self.meshes = []
 
         # Find the latest created output directory inside 'ProgressPilot'
@@ -647,18 +648,46 @@ class Mesh:
 
     def load_meshes(self):
         """
-        Load multiple meshes from the provided list of .ply files and store them in a list.
+        Load multiple meshes based on an Excel file that specifies which meshes to load, using the latest-dated Excel file.
 
         """
-        print(f"\nUsing the latest output directory: {self.output_dir}")
-        for file_name in self.file_name_mesh_list:
-            file_path = os.path.join('model', file_name)
-            if os.path.exists(file_path):
-                mesh = pv.read(str(file_path))
+        # Find the latest Excel file with format {ddmmyyyy}_facade_order.csv
+        latest_excel_file = None
+        for file in os.listdir('model'):
+            if file.endswith('_facade_order.csv'):
+                if latest_excel_file is None or file > latest_excel_file:
+                    latest_excel_file = file
 
+        # Ensure an Excel file was found
+        if latest_excel_file is None:
+            print("! No facade order Excel file found.")
+            return []
+
+        # Extract the date from the file name
+        date_str = latest_excel_file.split('_')[0]
+
+        # Load the Excel file to get the order and facade columns
+        file_path = os.path.join('model', latest_excel_file)
+        facade_data = pd.read_csv(file_path, sep=';')
+
+        print(f"\nUsing the latest facade order file: {latest_excel_file}")
+
+        # Prepare list to store the loaded meshes
+        self.meshes = []
+
+        # Loop through each facade specified in the Excel file
+        for facade in facade_data['facade']:
+            # Construct the mesh filename using the date and facade name
+            mesh_file_name = f"{date_str}_{facade}.ply"
+            mesh_file_path = os.path.join('model', mesh_file_name)
+
+            # Check if the mesh file exists and load it
+            if os.path.exists(mesh_file_path):
+                mesh = pv.read(mesh_file_path)
                 self.meshes.append(mesh)
+                print(f"Loaded mesh: {mesh_file_name}")
             else:
-                print(f"File {file_name} does not exist in the directory {file_path}.")
+                print(f"! Mesh file {mesh_file_name} does not exist in the directory.")
 
         self._save_meshes('model_mesh')
 
@@ -729,7 +758,6 @@ class Mesh:
 
             # Step 7: Show the plot
             plotter.show()
-
         else:
             print("! No meshes loaded to visualize the normals.")
 
@@ -741,7 +769,7 @@ class Mesh:
             for i, mesh in enumerate(self.meshes):
                 save_path = os.path.join(self.output_dir, f"{file_name}_{i}.ply")
                 mesh.save(save_path)
-                print(f"Saved mesh {i} as {save_path}")
+                # print(f"Saved mesh {i} as {save_path}")
         else:
             print("! No meshes to save.")
 
@@ -760,6 +788,50 @@ class ComparePCDMesh:
         self.not_built = None
         self.surface = None
 
+    def pair_PCD_mesh(self):
+        """
+        Every point cloud cluster belongs to a plane in the mesh.
+        This method will find the pairs which belong together.
+
+        """
+        if self.pcd and self.meshes:
+            pair = []
+            for i, mesh in enumerate(self.meshes):
+                # For every mesh find the corresponding pcd cluster, if there is one.
+                normal_mesh = mesh.point_data['Normals']
+                mean_normal_mesh = np.mean(normal_mesh, axis=0)
+
+                # Normalize the mean normal of the mesh
+                mean_normal_mesh /= np.linalg.norm(mean_normal_mesh)
+
+                count_alignment = 0
+                for j, pc in enumerate(self.pcd):
+                    normals = np.asarray(pc.normals)
+                    mean_normal_pc = np.mean(normals, axis=0)
+
+                    # Normalize the mean normal of the point cloud
+                    mean_normal_pc /= np.linalg.norm(mean_normal_pc)
+
+                    alignment = np.dot(mean_normal_pc, mean_normal_mesh)
+                    if alignment > 0.9:
+                        print(f"Mesh {i} matches the cluster {j} with an alignment of {alignment:.2f}")
+                        pair.append(pc)
+                        count_alignment += 1
+                    else:
+                        continue
+
+                if count_alignment == 0:
+                    empty = None
+                    pair.append(empty)
+
+            self.pcd = pair
+            print(f'self.pcd = {self.pcd}')
+            print(f'shape self.pcd = {np.shape(self.pcd)}')
+
+        else:
+            print(f'! No meshes or point clouds are found for pairing')
+
+
     def check_bricks(self, points_per_brick):
         if self.pcd and self.meshes:
             if type(self.pcd) is not list:
@@ -768,86 +840,95 @@ class ComparePCDMesh:
             if type(self.meshes) is not list:
                 self.meshes = [self.meshes]
 
+            print('\nPairing the right point cloud to mesh...')
+            self.pair_PCD_mesh()
+
             print('\nChecking which bricks are built...')
-            built = []
-            not_built = []
-            surface = []
-            for i, pc in enumerate(self.pcd):
-                mesh = self.meshes[i]
+            built = [None]*len(self.pcd)
+            print(f'built: {built}')
+            not_built = [None]*len(self.pcd)
+            surface = [None]*len(self.pcd)
+
+            for i, mesh in enumerate(self.meshes):
                 normal_mesh = mesh.point_data['Normals']
                 mean_normal = np.mean(normal_mesh, axis=0)
 
-                # if self.built[i]:
-                # pc = self.built
-                points = np.asarray(pc.points)
-                # else:
-                #     pass
-
                 # Extract surface mesh and number of components
                 surface_mesh = mesh.extract_surface()
-                surface.append(surface_mesh)
+                surface[i] = surface_mesh
                 n_components = surface_mesh.n_cells
-                print(f'number of bricks in model: {n_components}')
+                print(f'Wall {i} - number of bricks in model: {n_components}')
 
-                # Initialize lists for components with and without enough points
-                brick_enough_points = []
-                brick_not_enough_points = []
+                if self.pcd[i] is not None:
+                    pc = self.pcd[i]
+                    points = np.asarray(pc.points)
 
-                # Iterate over each brick in the mesh
-                for j in range(n_components):
-                    component = surface_mesh.extract_cells([j])
+                    # Initialize lists for components with and without enough points
+                    brick_enough_points = []
+                    brick_not_enough_points = []
 
-                    points_inside = 0
+                    # Iterate over each brick in the mesh
+                    for j in range(n_components):
+                        component = surface_mesh.extract_cells([j])
 
-                    # Check the mean normal to know in which coordinates (x, y or z) correspond with the bounds of the bricks
-                    if (mean_normal[0] == 0) and (mean_normal[1] == 0):
-                        x_bound, y_bound = component.bounds[:2], component.bounds[2:4]
+                        points_inside = 0
 
-                        # Loop through each point and check if it falls within the x and y bounds
-                        for point in points:
-                            px, py = point[0], point[1]
+                        # Check the mean normal to know in which coordinates (x, y or z) correspond with the bounds of the bricks
+                        if (mean_normal[0] == 0) and (mean_normal[1] == 0):
+                            x_bound, y_bound = component.bounds[:2], component.bounds[2:4]
 
-                            # Check if the point is within the x and y bounds
-                            if x_bound[0] < px < x_bound[1] and y_bound[0] < py < y_bound[1]:
-                                points_inside += 1
+                            # Loop through each point and check if it falls within the x and y bounds
+                            for point in points:
+                                px, py = point[0], point[1]
 
-                    elif (mean_normal[0] == 0) and (mean_normal[2] == 0):
-                        x_bound, z_bound = component.bounds[:2], component.bounds[4:6]
+                                # Check if the point is within the x and y bounds
+                                if x_bound[0] < px < x_bound[1] and y_bound[0] < py < y_bound[1]:
+                                    points_inside += 1
 
-                        # Loop through each point and check if it falls within the x and y bounds
-                        for point in points:
-                            px, pz = point[0], point[2]
+                        elif (mean_normal[0] == 0) and (mean_normal[2] == 0):
+                            x_bound, z_bound = component.bounds[:2], component.bounds[4:6]
 
-                            # Check if the point is within the x and z bounds
-                            if x_bound[0] < px < x_bound[1] and z_bound[0] < pz < z_bound[1]:
-                                points_inside += 1
+                            # Loop through each point and check if it falls within the x and y bounds
+                            for point in points:
+                                px, pz = point[0], point[2]
 
-                    elif (mean_normal[1] == 0) and (mean_normal[2] == 0):
-                        y_bound, z_bound = component.bounds[2:4], component.bounds[4:6]
+                                # Check if the point is within the x and z bounds
+                                if x_bound[0] < px < x_bound[1] and z_bound[0] < pz < z_bound[1]:
+                                    points_inside += 1
 
-                        # Loop through each point and check if it falls within the x and y bounds
-                        for point in points:
-                            py, pz = point[1], point[2]
+                        elif (mean_normal[1] == 0) and (mean_normal[2] == 0):
+                            y_bound, z_bound = component.bounds[2:4], component.bounds[4:6]
 
-                            # Check if the point is within the y and z bounds
-                            if y_bound[0] < py < y_bound[1] and z_bound[0] < pz < z_bound[1]:
-                                points_inside += 1
+                            # Loop through each point and check if it falls within the x and y bounds
+                            for point in points:
+                                py, pz = point[1], point[2]
 
-                    else:
-                        print("! Something went wrong with finding the right bounds")
+                                # Check if the point is within the y and z bounds
+                                if y_bound[0] < py < y_bound[1] and z_bound[0] < pz < z_bound[1]:
+                                    points_inside += 1
 
-                    # Classify the bricks in built or not built based on the amount of points inside
-                    if points_inside >= points_per_brick:
-                        brick_enough_points.append(j)
-                    else:
-                        brick_not_enough_points.append(j)
+                        else:
+                            print("! Something went wrong with finding the right bounds")
 
-                built.append(brick_enough_points)
-                not_built.append(brick_not_enough_points)
+                        # Classify the bricks in built or not built based on the amount of points inside
+                        if points_inside >= points_per_brick:
+                            brick_enough_points.append(j)
+                        else:
+                            brick_not_enough_points.append(j)
+
+                    built[i] = brick_enough_points
+                    not_built[i] = brick_not_enough_points
+                    # built.append(brick_enough_points)
+                    # not_built.append(brick_not_enough_points)
+                else:
+                    continue
 
             self.built = built
+            # print(f'self.built = {self.built}')
             self.not_built = not_built
+            # print(f'self.not_built = {self.not_built}')
             self.surface = surface
+            # print(f'self.surface = {self.surface}')
 
         else:
             print("! No meshes or point clouds were found for checking the bricks")
@@ -891,7 +972,7 @@ class ComparePCDMesh:
             progress_total = []
 
             for i, bricks in enumerate(self.built):
-                print(f'\nWall {i}:')
+                print(f'Wall {i}:')
                 if bricks:
                     n_bricks = len(bricks)
                 else:
@@ -902,17 +983,23 @@ class ComparePCDMesh:
                 if self.not_built[i]:
                     n_not_built_bricks = len(self.not_built[i])
                 else:
-                    n_not_built_bricks = 0
+                    surface = self.surface[i]
+                    n_not_built_bricks = surface.n_cells
                 print(f'- Number of bricks not built: {n_not_built_bricks}')
                 n_not_built_bricks_total.append(n_not_built_bricks)
 
-                # Calculate the progress of this specific wall
-                progress = round(n_bricks / (n_bricks + n_not_built_bricks) * 100, 2)
+                # Calculate the progress of this specific wall if there are bricks
+                if (n_bricks + n_not_built_bricks) > 0:
+                    progress = round(n_bricks / (n_bricks + n_not_built_bricks) * 100, 2)
+                else:
+                    progress = 0
+
                 print(f'- Progress: {progress} %')
                 progress_total.append(progress)
 
-            progress = round(np.prod(progress_total), 2)
-            print(f'\n The total progress: {progress} %')
+
+            progress = round(sum(n_bricks_total) / (sum(n_bricks_total) + sum(n_not_built_bricks_total)) * 100, 2)
+            print(f'\nThe total progress: {progress} %')
 
             return n_bricks_total, n_not_built_bricks_total, progress_total
 
@@ -948,16 +1035,20 @@ class ComparePCDMesh:
         # Visualize the mesh and components
         plotter = pv.Plotter()
 
-        for surface in self.surface:
-            built_surfaces = surface.extract_cells(self.built)
-            plotter.add_mesh(built_surfaces, color='green', opacity=1, show_edges=True)
+        for i, surface in enumerate(self.surface):
+            built_indices = self.built[i]
+            if built_indices is None:
+                continue
+
+            built_bricks = surface.extract_cells(built_indices)
+            plotter.add_mesh(built_bricks, color='green', opacity=1, show_edges=True)
 
         # Load the mesh for visualisation
         file_path_vis = os.path.join("model", file_name_vis)
         mesh_vis = pv.read(file_path_vis)
         plotter.add_mesh(mesh_vis, color='red', opacity=0.8, show_edges=True)
 
-        progress = round(np.prod(progress_total), 2)
+        progress = round(sum(n_bricks_total) / (sum(n_bricks_total) + sum(n_not_built_bricks_total)) * 100, 2)
         plotter.add_text(f"Progress = {progress} %")
 
         # plotter.camera_position = 'xz'

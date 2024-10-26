@@ -18,9 +18,6 @@ EPS = 0.02
 MIN_SAMPLES = 15
 MIN_POINTS = 50
 
-# Mesh processing
-FILE_NAME_MESH_LIST = ['front_23-10.ply', 'left_23-10.ply']
-
 # Comparing Mesh and Point Cloud
 POINTS_PER_BRICK = 15
-FILE_NAME_VIS = 'vis_model_1.ply'
+FILE_NAME_VIS = '26102024_vis_model.ply'
