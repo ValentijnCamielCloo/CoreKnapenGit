@@ -13,6 +13,77 @@ import constants as c
 import pandas as pd
 
 
+def get_scan_date_time(scan_number):
+    """
+    Finds the scan file with the latest date in the 'scans' directory and retrieves
+    the date and time of a specified scan file by its scan number.
+
+    Parameters:
+    - scan_number (int): The scan number to locate and retrieve the date and time for.
+
+    Returns:
+    - tuple: Formatted date (YYYY-MM-DD) and time (HH:MM:SS) of the specified scan.
+             Returns (None, None) if no matching files are found.
+    """
+    # Initialize variables to track the latest date and target scan file
+    latest_date = None  # Stores the latest date found across all scan files
+    latest_date_file = None  # Filename with the latest date
+    target_scan_file = None  # Filename matching the specified scan number
+
+    # Loop through files in the scans folder to find the scan with the latest date
+    for file in os.listdir('scans'):
+        if file.endswith('_filtered.ply'):  # Check only for files ending with '_filtered.ply'
+            parts = file.split('_')  # Split the filename by underscores
+
+            try:
+                # Extract the date part (format: ddmmyyyy) from the filename
+                file_date_str = parts[2]
+                file_date = datetime.strptime(file_date_str, "%d%m%Y").date()  # Convert to date object
+
+                # Update if this file has a later date than the current latest date
+                if latest_date is None or file_date > latest_date:
+                    latest_date = file_date
+                    latest_date_file = file
+
+                # Check if the file's scan number matches the desired scan number
+                if parts[1] == str(scan_number):
+                    target_scan_file = file  # Set the target file if the scan number matches
+
+            except (IndexError, ValueError) as e:
+                # Handle errors in parsing date or unexpected filename formats
+                print(f"! Skipping file {file}, error parsing date: {e}")
+
+    # Check if any files with a valid latest date were found
+    if latest_date_file is None:
+        print("! No scan files found with a valid date.")
+        return None, None
+
+    # Check if a file with the specified scan number was found
+    if target_scan_file is None:
+        print(f"! No scan file found with scan number {scan_number}.")
+        return None, None
+
+    # Extract date and time for the target scan file that matches the scan number
+    try:
+        target_parts = target_scan_file.split('_')  # Split target filename by underscores
+        scan_date = target_parts[2]  # Extract the date (ddmmyyyy) component
+        scan_time = target_parts[3]  # Extract the time (hhmmss) component
+
+        # Convert extracted strings to date and time objects
+        date_obj = datetime.strptime(scan_date, "%d%m%Y").date()
+        time_obj = datetime.strptime(scan_time, "%H%M%S").time()
+
+        # Format the date and time separately for CSV-friendly output
+        formatted_date = date_obj.strftime("%Y-%m-%d")  # Format as YYYY-MM-DD
+        formatted_time = time_obj.strftime("%H:%M:%S")  # Format as HH:MM:SS
+
+        return formatted_date, formatted_time  # Return the formatted date and time
+
+    except (IndexError, ValueError) as e:
+        # Handle errors in parsing date or time from the target filename
+        print("! Error parsing date and time from target file:", e)
+        return None, None
+
 def elbow_method(normals, save_path, max_k=10):
     """
     Apply the elbow method to find the optimal number of clusters for the input data.
@@ -156,52 +227,47 @@ class PointCloud:
         self.pcd = o3d.io.read_point_cloud(str(self.file_path))
         self._save_ply("scan")
 
-    def visualize(self, save_as_png=False, filename='visualization'):
+    def visualize(self, title=None, save_as_png=False):
         """
         Visualize the current point clouds and optionally save the visualization as a PNG file.
 
         Parameters:
+        - title (str): title of the visualization, and filename when save_as_png=True (default=None)
         - save_as_png (boolean): Optional to save as PNG file.
-        - filename (str): When saved as PNG, this will be the file name.
         """
         if self.pcd:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
-            vis = o3d.visualization.Visualizer()
-            vis.create_window()
+            plotter = pv.Plotter()
 
-            # # Create a coordinate frame
-            # axis = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
-            # vis.add_geometry(axis)
+            for pc in self.pcd:
+                # Extract points and colors from Open3D point cloud
+                points = np.asarray(pc.points)
+                if pc.has_colors() and len(self.pcd) == 1:
+                    colors = np.asarray(pc.colors)  # Colors in Open3D are normalized (0-1)
+                    colors = (colors * 255).astype(np.uint8)  # Convert to 0-255 for PyVista
+                else:
+                    random_color = np.random.randint(0, 256, size=(1, 3), dtype=np.uint8)  # Generate one random RGB color
+                    colors = np.tile(random_color, (len(points), 1))
 
-            if len(self.pcd) > 1:
-                for pc in self.pcd:
-                    random_color = [random.random(), random.random(), random.random()]
-                    pc.paint_uniform_color(random_color)  # Paint point cloud with random color
-                    vis.add_geometry(pc)
-            else:
-                for pc in self.pcd:
-                    vis.add_geometry(pc)
+                # Create a PyVista point cloud mesh
+                point_cloud = pv.PolyData(points)
+                if colors is not None:
+                    point_cloud['RGB'] = colors  # Add color data to PyVista object
 
-            # Set a custom camera position
-            ctr = vis.get_view_control()
+                plotter.add_points(point_cloud, scalars='RGB', rgb=True)  # Plot with RGB colors
 
-            # Example settings for front view
-            ctr.set_lookat([0, 0, 0])  # Set the focal point (center of the point cloud)
-            ctr.set_front([0, -1, 0.5])  # Set the camera direction to view from the front
-            ctr.set_up([0, 0, 1])  # Set the "up" direction
-            ctr.set_zoom(0.4)  # Adjust the zoom level if needed
+            if title:
+                plotter.add_title(title, font_size=12)
 
-            vis.run()  # Run the visualizer
+            plotter.show()
 
             if save_as_png:
-                filename = f'{filename}.png'
+                filename = title.replace(" ", "_") + ".png"
                 save_path = os.path.join(self.output_dir, filename)
-                vis.capture_screen_image(save_path)
-                print(f"\nVisualization saved as {save_path}")
-
-            vis.destroy_window()
+                plotter.screenshot(save_path)
+                print(f"Visualization saved as {save_path}")
 
         else:
             print("! No point cloud data to visualize.")
@@ -668,7 +734,7 @@ class Mesh:
 
         # Load the Excel file to get the order and facade columns
         file_path = os.path.join('model', latest_excel_file)
-        facade_data = pd.read_csv(file_path, sep=';')
+        facade_data = pd.read_csv(file_path)
 
         print(f"\nUsing the latest facade order file: {latest_excel_file}")
 
@@ -693,13 +759,13 @@ class Mesh:
 
         return self.meshes
 
-    def visualize(self, save_as_png=False, filename='mesh_visualization'):
+    def visualize(self, title=None, save_as_png=False, show_normals=False):
         """
-        Visualize the loaded meshes and optionally save the visualization as a PNG file.
+        Visualize the current meshes and optionally save the visualization as a PNG file.
 
         Parameters:
+        - title (str): title of the visualization, and filename when save_as_png=True (default=None)
         - save_as_png (boolean): Optional to save as PNG file.
-        - filename (str): When saved as PNG, this will be the file name.
         """
         if self.meshes:
             if type(self.meshes) is not list:
@@ -707,59 +773,38 @@ class Mesh:
 
             plotter = pv.Plotter()
 
-            if len(self.meshes) > 1:
-                for mesh in self.meshes:
-                    # Generate a random color for each mesh
-                    color = np.random.rand(3)  # Random color [R, G, B]
-                    plotter.add_mesh(mesh, color=color, show_edges=True)
-            else:
-                for mesh in self.meshes:
-                    plotter.add_mesh(mesh)
+            for mesh in self.meshes:
+                if show_normals:
+                    if mesh.n_points > 0 and 'Normals' not in mesh.point_data.keys():
+                        mesh.compute_normals(inplace=True)
+
+                    # Extract points and normals
+                    points = mesh.points
+                    mesh_normals = mesh.point_data['Normals']
+
+                    # Create and add normals as cones
+                    for point, normal in zip(points, mesh_normals):
+                        # Create an arrow at each point along the normal
+                        arrow = pv.Arrow(start=point, direction=normal, scale=0.02)
+                        plotter.add_mesh(arrow, color='red')
+
+                # Generate a random color for each mesh
+                color = np.random.rand(3)  # Random color [R, G, B]
+                plotter.add_mesh(mesh, color=color, show_edges=True)
+
+            if title:
+                plotter.add_title(title, font_size=12)
 
             plotter.show()
 
             if save_as_png:
-                filename = f'{filename}.png'
-                plotter.screenshot(filename)
-                print(f"Mesh visualization saved as {filename}")
+                filename = title.replace(" ", "_") + ".png"
+                save_path = os.path.join(self.output_dir, filename)
+                plotter.screenshot(save_path)
+                print(f"Mesh visualization saved as {save_path}")
 
         else:
             print("! No meshes loaded to visualize.")
-
-    def visualize_normals(self):
-        """
-        Load multiple PLY files, estimate normals if not present, and visualize each mesh and its normals.
-
-        """
-        if self.meshes:
-            if type(self.meshes) is not list:
-                self.meshes = [self.meshes]
-
-            # Create a PyVista Plotter
-            plotter = pv.Plotter()
-
-            for mesh in self.meshes:
-                # Check if the mesh has normals
-                if mesh.n_points > 0 and 'Normals' not in mesh.point_data.keys():
-                    mesh.compute_normals(inplace=True)
-
-                # Extract points and normals
-                points = mesh.points
-                normals = mesh.point_data['Normals']
-
-                # Add the mesh to the plotter
-                plotter.add_mesh(mesh, color='lightblue', show_edges=True)
-
-                # Create and add normals as cones
-                for point, normal in zip(points, normals):
-                    # Create a cone at each point along the normal
-                    arrow = pv.Arrow(start=point, direction=normal, scale=0.01)
-                    plotter.add_mesh(arrow, color='red')
-
-            # Step 7: Show the plot
-            plotter.show()
-        else:
-            print("! No meshes loaded to visualize the normals.")
 
     def _save_meshes(self, file_name="mesh"):
         """
@@ -788,7 +833,24 @@ class ComparePCDMesh:
         self.not_built = None
         self.surface = None
 
-    def pair_PCD_mesh(self):
+        # Find the latest created output directory inside 'ProgressPilot'
+        main_dir = "ProgressPilot"
+        if not os.path.exists(main_dir):
+            os.makedirs(main_dir)
+            print(f"Main directory created: {main_dir}")
+
+        # Get all directories in 'ProgressPilot'
+        all_items = os.listdir(main_dir)
+        progress_dirs = [item for item in all_items if os.path.isdir(os.path.join(main_dir, item))]
+
+        # Find the most recent directory based on timestamp
+        if progress_dirs:
+            progress_dirs.sort(key=lambda d: os.path.getmtime(os.path.join(main_dir, d)), reverse=True)
+            self.output_dir = os.path.join(main_dir, progress_dirs[0])
+        else:
+            raise Exception(f"No directories found in {main_dir}. Ensure that you first create a PointCloud project.")
+
+    def pair_pcd_mesh(self):
         """
         Every point cloud cluster belongs to a plane in the mesh.
         This method will find the pairs which belong together.
@@ -825,15 +887,19 @@ class ComparePCDMesh:
                     pair.append(empty)
 
             self.pcd = pair
-            print(f'self.pcd = {self.pcd}')
-            print(f'shape self.pcd = {np.shape(self.pcd)}')
 
         else:
             print(f'! No meshes or point clouds are found for pairing')
 
-
     def check_bricks(self, points_per_brick):
+        """
+        Check which bricks are built based on point cloud data.
+
+        Parameters:
+        - points_per_brick (int): Minimum number of points required for a brick to be considered built.
+        """
         if self.pcd and self.meshes:
+            # Ensure self.pcd and self.meshes are lists
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
@@ -841,14 +907,14 @@ class ComparePCDMesh:
                 self.meshes = [self.meshes]
 
             print('\nPairing the right point cloud to mesh...')
-            self.pair_PCD_mesh()
+            self.pair_pcd_mesh() # Pair point clouds to meshes
 
             print('\nChecking which bricks are built...')
-            built = [None]*len(self.pcd)
-            print(f'built: {built}')
-            not_built = [None]*len(self.pcd)
-            surface = [None]*len(self.pcd)
+            built = [None]*len(self.pcd) # Initialize lists for built brick
+            not_built = [None]*len(self.pcd) # Initialize lists for not built bricks
+            surface = [None]*len(self.pcd) # Initialize surface mesh (bricks in model) list
 
+            # Iterate over each surface mesh (brick in model) to check the amount of corresponding points
             for i, mesh in enumerate(self.meshes):
                 normal_mesh = mesh.point_data['Normals']
                 mean_normal = np.mean(normal_mesh, axis=0)
@@ -856,10 +922,10 @@ class ComparePCDMesh:
                 # Extract surface mesh and number of components
                 surface_mesh = mesh.extract_surface()
                 surface[i] = surface_mesh
-                n_components = surface_mesh.n_cells
-                print(f'Wall {i} - number of bricks in model: {n_components}')
+                n_surface_mesh = surface_mesh.n_cells
+                print(f'Wall {i} - number of bricks in model: {n_surface_mesh}')
 
-                if self.pcd[i] is not None:
+                if self.pcd[i] is not None: # Ensure there's a point cloud to check
                     pc = self.pcd[i]
                     points = np.asarray(pc.points)
 
@@ -867,11 +933,11 @@ class ComparePCDMesh:
                     brick_enough_points = []
                     brick_not_enough_points = []
 
-                    # Iterate over each brick in the mesh
-                    for j in range(n_components):
+                    # Iterate over each surface mesh (brick in model)
+                    for j in range(n_surface_mesh):
                         component = surface_mesh.extract_cells([j])
 
-                        points_inside = 0
+                        points_inside = 0 # Initialize count for points inside the component
 
                         # Check the mean normal to know in which coordinates (x, y or z) correspond with the bounds of the bricks
                         if (mean_normal[0] == 0) and (mean_normal[1] == 0):
@@ -906,7 +972,6 @@ class ComparePCDMesh:
                                 # Check if the point is within the y and z bounds
                                 if y_bound[0] < py < y_bound[1] and z_bound[0] < pz < z_bound[1]:
                                     points_inside += 1
-
                         else:
                             print("! Something went wrong with finding the right bounds")
 
@@ -918,61 +983,32 @@ class ComparePCDMesh:
 
                     built[i] = brick_enough_points
                     not_built[i] = brick_not_enough_points
-                    # built.append(brick_enough_points)
-                    # not_built.append(brick_not_enough_points)
                 else:
-                    continue
+                    continue # Skip to the next mesh if no point cloud is available
 
-            self.built = built
-            # print(f'self.built = {self.built}')
-            self.not_built = not_built
-            # print(f'self.not_built = {self.not_built}')
-            self.surface = surface
-            # print(f'self.surface = {self.surface}')
+            self.built = built # Update built attribute
+            self.not_built = not_built # Update not built attribute
+            self.surface = surface # Update surface attribute
 
         else:
             print("! No meshes or point clouds were found for checking the bricks")
 
-    def visualize(self, save_as_png=False, filename='compare_visualization'):
-        if self.pcd:
-            plotter = pv.Plotter()
-
-            # Add meshes
-            if type(self.meshes) is not list:
-                self.meshes = [self.meshes]
-
-            for mesh in self.meshes:
-                plotter.add_mesh(mesh, color='lightgrey', show_edges=True)
-
-            # Add point clouds
-            if type(self.pcd) is not list:
-                self.pcd = [self.pcd]
-
-            for pc in self.pcd:
-                points_pc = np.asarray(pc.points)
-                pc = pv.PolyData(points_pc)
-                plotter.add_mesh(pc, color='lightblue')
-
-            plotter.show()
-
-            if save_as_png:
-                filename = f'{filename}.png'
-                plotter.screenshot(filename)
-                print(f"Point cloud and mesh visualization saved as {filename}")
-
-        else:
-            print("! No point clouds loaded to visualize.")
-
     def calculate_results(self):
+        """
+        Calculate and return the total number of built and not built bricks, along with progress percentage.
 
+        - Return: Tuple containing total built bricks, total not built bricks, and progress percentage for each wall.
+        """
         if self.built:
             print('\nCalculating the results...')
-            n_bricks_total = []
-            n_not_built_bricks_total = []
-            progress_total = []
+            n_bricks_total = [] # List for total built bricks per wall
+            n_not_built_bricks_total = [] # List for total not built bricks per wall
+            progress_total = [] # List for progress percentages per wall
 
             for i, bricks in enumerate(self.built):
                 print(f'Wall {i}:')
+
+                # Count the total number of built bricks
                 if bricks:
                     n_bricks = len(bricks)
                 else:
@@ -980,6 +1016,7 @@ class ComparePCDMesh:
                 print(f'- Number of bricks built: {n_bricks}')
                 n_bricks_total.append(n_bricks)
 
+                # Count the total number of not built bricks
                 if self.not_built[i]:
                     n_not_built_bricks = len(self.not_built[i])
                 else:
@@ -993,68 +1030,186 @@ class ComparePCDMesh:
                     progress = round(n_bricks / (n_bricks + n_not_built_bricks) * 100, 2)
                 else:
                     progress = 0
-
                 print(f'- Progress: {progress} %')
                 progress_total.append(progress)
 
-
-            progress = round(sum(n_bricks_total) / (sum(n_bricks_total) + sum(n_not_built_bricks_total)) * 100, 2)
-            print(f'\nThe total progress: {progress} %')
+            # Calculate the progress of all the walls together
+            progress_sum = round(sum(n_bricks_total) / (sum(n_bricks_total) + sum(n_not_built_bricks_total)) * 100, 2)
+            print(f'\nThe total progress: {progress_sum} %')
 
             return n_bricks_total, n_not_built_bricks_total, progress_total
 
         else:
             print('! There is no point cloud for calculating the results')
 
+    def visualize(self, title=None, save_as_png=False):
+        """
+        Visualize the current meshes and point clouds, and optionally save the visualization as a PNG file.
+
+        Parameters:
+        - title (str): title of the visualization, and filename when save_as_png=True (default=None).
+        - save_as_png (boolean): Optional to save as PNG file (default=False).
+        """
+        if self.pcd or self.meshes:
+            plotter = pv.Plotter()
+
+            # Add meshes to the plot
+            if type(self.meshes) is not list:
+                self.meshes = [self.meshes]
+
+            for mesh in self.meshes:
+                plotter.add_mesh(mesh, color='lightgrey', show_edges=True)
+
+            # Add point clouds to the plot
+            if type(self.pcd) is not list:
+                self.pcd = [self.pcd]
+
+            for pc in self.pcd:
+                points_pc = np.asarray(pc.points)
+                pc = pv.PolyData(points_pc)
+                plotter.add_mesh(pc, color='lightblue')
+
+            # Add a title if there is one
+            if title:
+                plotter.add_title(title, font_size=12)
+
+            plotter.show()
+
+            # Save the image as png with title as filename if save_as_png=True
+            if save_as_png:
+                filename = title.replace(" ", "_") + ".png" # Use the title as filename, but replace ' ' with '_'
+                save_path = os.path.join(self.output_dir, filename)
+                plotter.screenshot(save_path)
+                print(f"Point cloud and mesh visualization saved as {save_path}")
+
+        else:
+            print("! No point clouds or meshes loaded to visualize.")
+
+    def visualize_result(self, filename_vis, title='Results', save_as_png=True):
+        """
+        Visualize the results and optionally save the visualization as a PNG file.
+        Add information to the image on the progress of the total wall.
+
+        Parameters:
+        - title (str): title of the visualization, and filename when save_as_png=True (default='Results').
+        - save_as_png (boolean): Optional to save as PNG file (default=True).
+        """
+        if self.pcd or self.meshes:
+            # Calculate the results, extract the cells which are built
+            n_bricks_total, n_not_built_bricks_total, progress_total = self.calculate_results()
+
+            plotter = pv.Plotter()
+
+            # Add the surface meshes (bricks) to the visualization when it is built
+            for i, surface in enumerate(self.surface):
+                built_indices = self.built[i]
+                if built_indices is None: # If there are no built bricks in a wall, continue with the next wall
+                    continue
+
+                built_bricks = surface.extract_cells(built_indices) # Extract the right surface meshes (bricks) based on indices
+                plotter.add_mesh(built_bricks, color='green', opacity=1, show_edges=True)
+
+            # Load the entire wall for visualisation, this shows the wall in 3D
+            file_path_vis = os.path.join("model", filename_vis)
+            mesh_vis = pv.read(file_path_vis)
+            plotter.add_mesh(mesh_vis, color='red', opacity=0.2)
+
+            # Calculate the progress of the entire wall
+            progress = round(sum(n_bricks_total) / (sum(n_bricks_total) + sum(n_not_built_bricks_total)) * 100, 2)
+
+            # Create a single multiline string for the text to add to the visualization
+            multi_line_text = (
+                f"Progress = {progress} %\n"
+                f"- built = {sum(n_bricks_total)}\n"
+                f"- to be built = {sum(n_not_built_bricks_total)}"  # Adjust this based on your logic
+            )
+            plotter.add_text(multi_line_text, font_size=10)
+
+            # Add a title if there is one
+            if title:
+                plotter.add_title(title, font_size=12)
+
+            # plotter.camera_position = 'xz'
+            # plotter.camera.position = (-1, -1, 0.5)
+            # plotter.camera.focal_point = (0, 0, 0.2)
+            # plotter.camera.viewup = (0, 0, 1)
+            # plotter.camera.zoom(1.7)
+
+            plotter.show()
+
+            # Save the image as png with title as filename if save_as_png=True
+            if save_as_png:
+                filename = title.replace(" ", "_") + ".png" # Use the title as filename, but replace ' ' with '_'
+                save_path = os.path.join(self.output_dir, filename)
+                plotter.screenshot(save_path)
+                print(f"Results saved as {save_path}")
+
+            else:
+                print("! No point clouds or meshes loaded to visualize.")
+
     def write_results(self):
+        """
+        Export the calculated results to a CSV file.
+
+        """
+        # Calculate the results
         n_bricks, n_no_bricks, progress = self.calculate_results()
+
+        # Check the data type, if it is not a list, change it to list
         if type(n_bricks) is not list:
             n_bricks = [n_bricks]
         if type(n_no_bricks) is not list:
             n_no_bricks = [n_no_bricks]
         if type(progress) is not list:
             progress = [progress]
-        # Open the CSV file in write mode ('w')
-        file_name = 'results.csv'
-        with open(file_name, mode='w', newline='') as file:
+
+        filename = 'Results.csv'
+        save_path = os.path.join(self.output_dir, filename)
+
+        # # Find corresponding date and time of each scan
+        # date = []
+        # time = []
+        # for i in range(len(n_bricks)):
+        #     formatted_date, formatted_time = get_scan_date_time(i)
+        #
+        #     if formatted_date is None or formatted_time is None:
+        #         print(f"! Unable to format date and/or time for scan {i}.")
+        #         return
+        #     date.append(formatted_date)
+        #     time.append(formatted_time)
+
+        # Find corresponding facade to each wall number in the facade order file
+        latest_excel_file = None
+        for file in os.listdir('model'):
+            if file.endswith('_facade_order.csv'):
+                if latest_excel_file is None or file > latest_excel_file:
+                    latest_excel_file = file
+
+        # Ensure an Excel file was found
+        if latest_excel_file is None:
+            print("! No facade order Excel file found.")
+            return []
+
+        # Load the Excel file to get the facade column and add it to a list
+        file_path = os.path.join('model', latest_excel_file)
+        facade_data = pd.read_csv(file_path, sep=';')
+        facades = facade_data['facade'].tolist()
+
+        with open(save_path, mode='w', newline='') as file:
             writer = csv.writer(file)
 
             # Write the header row
-            writer.writerow(['bricks built', 'bricks to be built', 'progress (%)'])
+            writer.writerow(['scan date', 'scan time',
+                             'wall', 'facade', 'bricks built',
+                             'bricks to built', 'progress (%)'])
 
-            # Iterate over both lists simultaneously and write rows to the CSV
-            for n_bricks, n_no_bricks, progress in zip(n_bricks, n_no_bricks, progress):
-                writer.writerow([n_bricks, n_no_bricks, progress])
+            # Iterate over the results and write each row
+            for i in range(len(n_bricks)):
+                writer.writerow([i, facades[i], n_bricks[i], n_no_bricks[i], progress[i]])
 
-        print(f"Data written to {file_name}")
+            # Calculate the total progress
+            progress_total = round(sum(n_bricks) / (sum(n_bricks) + sum(n_no_bricks)) * 100, 2)
+            writer.writerow(['total', '' ,sum(n_bricks), sum(n_no_bricks), progress_total])
 
-    def visualize_result(self, file_name_vis):
-        # Calculate the results, extract the cells which are built
-        n_bricks_total, n_not_built_bricks_total, progress_total = self.calculate_results()
+        print(f"\nResults written to {save_path}")
 
-        # Visualize the mesh and components
-        plotter = pv.Plotter()
-
-        for i, surface in enumerate(self.surface):
-            built_indices = self.built[i]
-            if built_indices is None:
-                continue
-
-            built_bricks = surface.extract_cells(built_indices)
-            plotter.add_mesh(built_bricks, color='green', opacity=1, show_edges=True)
-
-        # Load the mesh for visualisation
-        file_path_vis = os.path.join("model", file_name_vis)
-        mesh_vis = pv.read(file_path_vis)
-        plotter.add_mesh(mesh_vis, color='red', opacity=0.8, show_edges=True)
-
-        progress = round(sum(n_bricks_total) / (sum(n_bricks_total) + sum(n_not_built_bricks_total)) * 100, 2)
-        plotter.add_text(f"Progress = {progress} %")
-
-        # plotter.camera_position = 'xz'
-        plotter.camera.position = (-1, -1, 0.5)
-        plotter.camera.focal_point = (0, 0, 0.1)
-        plotter.camera.viewup = (0, 0, 1)
-        plotter.camera.zoom(1.7)
-
-        plotter.show()

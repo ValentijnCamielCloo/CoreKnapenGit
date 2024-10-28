@@ -17,19 +17,19 @@ def main():
     # Remove outliers
     pcd.cluster_kmeans_normals(biggest_cluster=True)
     pcd.remove_outliers_radius(nb_points=c.NB_POINTS,radius=c.RADIUS_RADIUS_REMOVAL)
-    pcd.visualize()
+    pcd.visualize(title='Outliers removed')
 
     # Initialize the Mesh class with the directory and list of files
     meshes = Mesh()
     meshes.load_meshes()
-    meshes.visualize()
+    meshes.visualize(title='Mesh')
 
     # Rotate the point cloud based on normal
     pcd.orientate(meshes.meshes)
     # #
-    # # # Check if the orientation is correct
-    # # compare = ComparePCDMesh(pcd.pcd, meshes.meshes)
-    # # compare.visualize()
+    # Check if the orientation is correct
+    # compare = ComparePCDMesh(pcd.pcd, meshes.meshes)
+    # compare.visualize(title='Check orientation point cloud')
     #
     # # Register the point clouds to one point cloud
     # # pcd.registration(source_pcd=c.SOURCE_PCD)
@@ -40,8 +40,8 @@ def main():
     # pcd.visualize()
     #
     # # Cluster k means the planes
-    # # pcd.cluster_kmeans_normals()
-    # # pcd.visualize()
+    # pcd.cluster_kmeans_normals()
+    # pcd.visualize()
     #
     # Filter the total point cloud
     # pcd.estimate_normals()
@@ -61,11 +61,11 @@ def main():
     #
     # Initialize the ComparePCDMesh class
     compare = ComparePCDMesh(pcd.pcd, meshes.meshes)
-    compare.visualize()
+    compare.visualize(title='Check pcd and mesh')
     compare.check_bricks(points_per_brick=c.POINTS_PER_BRICK)
-    compare.visualize_result(file_name_vis=c.FILE_NAME_VIS)
+    compare.visualize_result(filename_vis=c.FILENAME_VIS)
     #
-    # compare.write_results()
+    compare.write_results()
 
 
 if __name__ == '__main__':
