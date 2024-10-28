@@ -1,0 +1,10 @@
+# Run this command in terminal to install all necessary packages
+# pip install -r requirements.txt
+
+kneed==0.8.5
+matplotlib==3.9.2
+numpy==1.26.4
+open3d==0.18.0
+pandas==2.2.3
+pyvista==0.44.1
+scikit-learn==1.5.2
