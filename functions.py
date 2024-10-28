@@ -11,7 +11,14 @@ import random
 import csv
 import constants as c
 import pandas as pd
+import logging
 
+# Configure logging
+logging.basicConfig(
+    filename='CORE_comparison.log',  # Log file name
+    level=logging.INFO,                # Set the logging level
+    format='%(asctime)s - %(levelname)s - %(message)s'  # Log message format
+)
 
 def get_scan_date_time(scan_number):
     """
@@ -189,7 +196,7 @@ class PointCloud:
         main_dir = "ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
-            print(f"Main directory created: {main_dir}")
+            logging.info(f"Main directory created: {main_dir}")
 
         # Get a list of all directories in the 'ProgressPilot' directory
         all_items = os.listdir(main_dir)
@@ -217,13 +224,13 @@ class PointCloud:
         # Ensure the output directory exists
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-            print(f"Output directory created: {self.output_dir}")
+            logging.info(f"Output directory created: {self.output_dir}")
 
     def load_pcd(self):
         """
-        Load the point cloud from the .ply file.
+        Load the point cloud from the .ply file.qqq
         """
-        print(f"\nLoading point cloud from {self.file_path}")
+        logging.info(f"Loading point cloud from {self.file_path}")
         self.pcd = o3d.io.read_point_cloud(str(self.file_path))
         self._save_ply("scan")
 
