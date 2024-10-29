@@ -1,7 +1,7 @@
 import open3d as o3d
 import os
 import re
-
+#ad
 def print_ply_files(output_dir):
     """
     Prints the list of PLY files in the specified directory.
@@ -63,8 +63,8 @@ def extract_scan_number(file_name):
 
 if __name__ == "__main__":
     # Path to the output directory where PLY files are saved
-    output_dir = "./output"
-
+    #output_dir = "./merged_scans"
+    output_dir = "./scans"
     # Print the list of PLY files in the output directory
     print_ply_files(output_dir)
 

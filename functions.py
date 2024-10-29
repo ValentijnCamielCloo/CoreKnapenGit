@@ -9,7 +9,6 @@ from datetime import datetime
 import pyvista as pv
 import random
 
-from trimesh.transformations import rotation_matrix
 
 
 def elbow_method(normals, save_path, max_k=10):

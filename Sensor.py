@@ -25,6 +25,7 @@ Keyboard:
     [q\ESC] Quit
 """
 
+import constants as c
 import math
 import time
 import cv2
@@ -241,7 +242,7 @@ def pointcloud(out, verts, texcoords, color, painter=True):
     distances = np.linalg.norm(verts, axis=1)
     
     # Create a mask to filter out points at a distance of 2 meters or more THIS ONLY WORKS IN THE VISUALIZER NOT THE EXPORT
-    mask = distances < 0.80  # Keep points that are less than x meters
+    mask = distances < c.FILTERED_DISTANCE  # Keep points that are less than x meters
 
     # Apply the mask to the vertices and texture coordinates
     verts = verts[mask]
@@ -364,7 +365,7 @@ while True:
         color_data = np.asanyarray(color_frame.get_data()).reshape(-1, 3)
         # Calculate distances and filter points
         distances = np.linalg.norm(verts, axis=1)
-        mask = distances < 0.8  # Keep points that are less than 1 meter
+        mask = distances < c.FILTERED_DISTANCE  # Keep points that are less than x meters
         
         # Convert texcoords to pixel positions in the color image
         cw, ch = color_frame.get_width(), color_frame.get_height()  # Assuming 1920x1080

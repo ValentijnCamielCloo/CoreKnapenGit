@@ -1,4 +1,3 @@
-from constants import FILE_NAME_MESH_LIST
 from functions import *
 import constants as c
 
@@ -18,6 +17,7 @@ def main():
 
     # Cluster point cloud based on normals
     pcd.cluster_kmeans_normals()
+    
     pcd.visualize()
 
     # Remove outliers from the clusters
@@ -25,7 +25,7 @@ def main():
     pcd.visualize()
 
     # Initialize the Mesh class with the directory and list of files
-    meshes = Mesh(file_dir_mesh=c.FILE_DIR_MESH, file_name_mesh_list=FILE_NAME_MESH_LIST)
+    meshes = Mesh(file_dir_mesh=c.FILE_DIR_MESH, file_name_mesh_list=c.FILE_NAME_MESH_LIST)
 
     # Load the meshes
     meshes.load_meshes()
