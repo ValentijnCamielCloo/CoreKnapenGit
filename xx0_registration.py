@@ -6,7 +6,7 @@ from xx0_functions_registration import *
 from xx0_functions_registration import draw_registration_result_original_color
 \
 # Define the folder paths 
-scans_folder_path = r'D:\TUdelftGitCore\CoreKnapenGit\scans'
+scans_folder_path = r'D:\TUdelftGitCore\CoreKnapenGit\transformed'
 output_base_folder = r'D:\TUdelftGitCore\CoreKnapenGit\ProgressPilotRegistration'
 
 # Create a folder for the current run with date and time

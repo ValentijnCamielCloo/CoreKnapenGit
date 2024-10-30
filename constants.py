@@ -14,3 +14,4 @@ FILE_NAME_MESH = ''
 # Comparing Mesh and Point Cloud
 POINTS_PER_BRICK = 15
 FILENAME_VIS = '26102024_vis_model.ply'
+FILTERED_DISTANCE = 1
