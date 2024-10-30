@@ -1,11 +1,13 @@
 # Point Cloud processing
-FILE_NAME_PCD = 'Scan_2_20241017_122833_filtered.ply'
+# FILE_NAME_PCD = 'Scan_2_20241017_122833_filtered.ply'
 
+DIST_SCANNER_OBJ = 0.3
+HEIGHT_SCANNER = 0.045
 # Voxel downsampling
 VOXEL_SIZE = 0.005
 
 # Radius outlier removal
-NB_POINTS = 15
+NB_POINTS = 25
 RADIUS_RADIUS_REMOVAL = 0.015
 
 # Normal outlier removal
