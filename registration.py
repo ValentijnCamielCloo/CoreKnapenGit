@@ -5,7 +5,6 @@ import datetime
 import csv
 from xx3_functions_registration import draw_registration_result_original_color
 
-#2,3,4,9,8,5,6
 # Define the folder paths
 scans_folder_path = r'D:\TUdelftGitCore\CoreKnapenGit\transformed'
 output_base_folder = r'D:\TUdelftGitCore\CoreKnapenGit\ProgressPilotRegistration'
@@ -28,8 +27,8 @@ current_transformation = np.identity(4)
 cumulative_cloud = o3d.io.read_point_cloud(os.path.join(scans_folder_path, ply_files[0]))
 cumulative_name = ply_files[0]
 
-# Export the initial cumulative cloud
-initial_registered_path = os.path.join(output_folder, "Registered_0.ply")
+# Export the initial cumulative cloud with "_registered" suffix
+initial_registered_path = os.path.join(output_folder, f"{cumulative_name.split('.ply')[0]}_registered.ply")
 o3d.io.write_point_cloud(initial_registered_path, cumulative_cloud)
 
 # Create CSV file to store registration details
@@ -56,9 +55,6 @@ with open(csv_file_path, mode='w', newline='') as csv_file:
             iter = max_iter[scale]
             radius = voxel_radius[scale]
             print(f"Scale {scale + 1} - Iterations: {iter}, Voxel size: {radius}")
-
-            # Before registration, show current counts
-            print(f"Before registration: Cumulative cloud has {len(cumulative_cloud.points)} points, Source has {len(source.points)} points.")
 
             # Downsample cumulative cloud and source cloud
             cumulative_down = cumulative_cloud.voxel_down_sample(radius)
@@ -114,8 +110,12 @@ with open(csv_file_path, mode='w', newline='') as csv_file:
         # Write the final translation and rotation to the CSV
         csv_writer.writerow([source_name, cumulative_name, translation[0], translation[1], translation[2], *rotation_degrees])
 
+        # Export each registered point cloud individually with "_registered" suffix
+        registered_file_path = os.path.join(output_folder, f"{source_name.split('.ply')[0]}_registered.ply")
+        o3d.io.write_point_cloud(registered_file_path, source)
+
         # Update cumulative_cloud and cumulative_name with the new registered source
         cumulative_cloud = combined_cloud
-        cumulative_name = f"Registered_{i}.ply"
+        cumulative_name = source_name  # keep original naming for logging and referencing
 
-print("Registration complete. All registered point clouds are exported.")
+print("Registration complete. All registered point clouds are exported individually with original names.")

@@ -20,7 +20,7 @@ ply_files = glob.glob(os.path.join(scans_folder_path, "*.ply"))
 scale_df = pd.read_csv(r"D:\TUdelftGitCore\CoreKnapenGit\Scan_Color_scale.csv")
 scale_values = {row['Scan']: float(row['Scale']) for index, row in scale_df.iterrows()}  # Ensure scale is float
 
-# Iterate through all PLY files
+# Iterate through all PLY files (4, 6, 7, 8) 
 for ply_file in ply_files:
     # Load the point cloud
     point_cloud = o3d.io.read_point_cloud(ply_file)
@@ -96,10 +96,10 @@ for ply_file in ply_files:
             return (255, 0, 0)  # Assign red
         elif ranges[1][0] <= red_value < ranges[1][1]:
             color_hist_data['Dark Green'].append(red_value)
-            return (255, 255, 68)  # Assign dark green
+            return (35, 157, 64)  # Assign dark green
         elif ranges[2][0] <= red_value < ranges[2][1]:
             color_hist_data['Yellow'].append(red_value)
-            return (35, 157, 64)  # Assign yellow
+            return (255, 255, 68)  # Assign yellow 255, 255, 68
         else:
             color_hist_data['Blue'].append(red_value)
             return (0, 0, 255)  # Default to blue if no match
