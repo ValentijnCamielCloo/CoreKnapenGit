@@ -20,7 +20,7 @@ ply_files = glob.glob(os.path.join(scans_folder_path, "*.ply"))
 scale_df = pd.read_csv(r"D:\TUdelftGitCore\CoreKnapenGit\Scan_Color_scale.csv")
 scale_values = {row['Scan']: float(row['Scale']) for index, row in scale_df.iterrows()}  # Ensure scale is float
 
-# Iterate through all PLY files (4, 6, 7, 8) 
+# Iterate through all PLY files
 for ply_file in ply_files:
     # Load the point cloud
     point_cloud = o3d.io.read_point_cloud(ply_file)
@@ -44,8 +44,6 @@ for ply_file in ply_files:
     # Scale the colors
     colors_scaled = np.clip(colors * scale_value, 0, 1)
     point_cloud.colors = o3d.utility.Vector3dVector(colors_scaled)
-
-    # (rest of your code continues...)
 
     # Filter out white colors
     non_white_mask = ~np.all(colors_scaled > 0.95, axis=1)
@@ -89,8 +87,8 @@ for ply_file in ply_files:
         'Blue': [],
     }
 
-    # Function to assign color based on estimated ranges
-    def assign_color_based_on_red(red_value):
+    # Function to assign color based on red channel for scans [4, 6, 7, 8]
+    def assign_color_based_on_red_standard(red_value):
         if ranges[0][0] <= red_value < ranges[0][1]:
             color_hist_data['Red'].append(red_value)
             return (255, 0, 0)  # Assign red
@@ -99,10 +97,31 @@ for ply_file in ply_files:
             return (35, 157, 64)  # Assign dark green
         elif ranges[2][0] <= red_value < ranges[2][1]:
             color_hist_data['Yellow'].append(red_value)
-            return (255, 255, 68)  # Assign yellow 255, 255, 68
+            return (255, 255, 68)  # Assign yellow
         else:
             color_hist_data['Blue'].append(red_value)
-            return (0, 0, 255)  # Default to blue if no match
+            return (0, 0, 255)  # Assign blue
+
+    # Function to assign color with yellow and green switched for scans [2, 3, 5, 9]
+    def assign_color_based_on_red_switched(red_value):
+        if ranges[0][0] <= red_value < ranges[0][1]:
+            color_hist_data['Red'].append(red_value)
+            return (255, 0, 0)  # Assign red
+        elif ranges[1][0] <= red_value < ranges[1][1]:
+            color_hist_data['Yellow'].append(red_value)
+            return (255, 255, 68)  # Assign yellow (switched)
+        elif ranges[2][0] <= red_value < ranges[2][1]:
+            color_hist_data['Dark Green'].append(red_value)
+            return (35, 157, 64)  # Assign dark green (switched)
+        else:
+            color_hist_data['Blue'].append(red_value)
+            return (0, 0, 255)  # Assign blue
+
+    # Apply the appropriate coloring function based on the scan number
+    if int(scan_name.split("_")[1]) in [1, 2, 3, 5]:
+        assign_color_based_on_red = assign_color_based_on_red_switched
+    else:
+        assign_color_based_on_red = assign_color_based_on_red_standard
 
     # Final coloring process based on average red channel values
     uniform_colors = np.zeros_like(colors)
