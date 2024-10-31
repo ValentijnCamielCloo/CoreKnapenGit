@@ -36,13 +36,7 @@ for i in range(1, len(ply_files)):
     # Read the next source point cloud
     source_pcd = o3d.io.read_point_cloud(source_path)
     # Visualize NON ROTATED source and target
-    window_title = f"NON ROTATED: Source: {source_file}, Target: {target_file}"
-    o3d.visualization.draw_geometries([source_pcd, target_pcd, coordinate_frame], window_name=window_title)
-
-    # Apply initial alignment (rotation)
-    source_pcd = apply_initial_alignment(source_pcd, i)
-    # Visualize ROTATED source and target
-    window_title = f"ROTATED: Source: {source_file}, Target: {target_file}"
+    window_title = f"Transformed: Source: {source_file}, Target: {target_file}"
     o3d.visualization.draw_geometries([source_pcd, target_pcd, coordinate_frame], window_name=window_title)
 
     # Downsample point clouds

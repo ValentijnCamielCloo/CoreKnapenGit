@@ -15,10 +15,10 @@ os.makedirs(output_folder, exist_ok=True)
 
 # Get all PLY files from the transformed scans folder
 ply_files = sorted([f for f in os.listdir(scans_folder_path) if f.endswith(".ply")])
-
+print(ply_files)
 # Define multi-scale parameters for Colored ICP registration
-voxel_radius = [0.04, 0.02, 0.01]
-max_iter = [50, 30, 14]
+voxel_radius = [0.005, 0.005, 0.005]
+max_iter = [80, 100, 50]
 current_transformation = np.identity(4)
 
 # Initialize cumulative point cloud with the first scan
@@ -54,8 +54,8 @@ for i in range(1, len(ply_files)):
         source_down = source.voxel_down_sample(radius)
 
         # Estimate normals
-        cumulative_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 2, max_nn=30))
-        source_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 2, max_nn=30))
+        cumulative_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 1, max_nn=30))
+        source_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 1, max_nn=30))
 
         # Apply Colored ICP registration
         result_icp = o3d.pipelines.registration.registration_colored_icp(

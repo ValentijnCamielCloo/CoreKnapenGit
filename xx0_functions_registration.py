@@ -42,24 +42,6 @@ def display_inlier_outlier(cloud, ind):
     o3d.visualization.draw_geometries([inlier_cloud, outlier_cloud])
     return inlier_cloud
 
-def apply_initial_alignment(pcd, index):
-    # Rotation angles in degrees for counterclockwise rotation
-    rotation_angles = [0, 45, 90, 135, 180, 225, 270, 315]
-    # Get the corresponding angle for the given index
-    angle = np.radians(rotation_angles[index])  # Convert to radians
-
-    # Create a rotation matrix
-    rotation_matrix = np.array([
-        [np.cos(angle), -np.sin(angle), 0, 0],
-        [np.sin(angle), np.cos(angle), 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]
-    ])
-
-    # Apply the rotation
-    pcd.transform(rotation_matrix)
-
-    return pcd
 
 # Adjust global registration function in xx0_functions_registration.py
 def execute_global_registration(source_down, target_down, source_fpfh, target_fpfh, voxel_size):
