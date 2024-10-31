@@ -1,10 +1,15 @@
 # Point Cloud processing
-# FILE_NAME_PCD = 'Scan_2_20241017_122833_filtered.ply'
+FILENAME_PCD = "Registered_4_aligned_to_Scan_2.ply"
 
 DIST_SCANNER_OBJ = 0.3
 HEIGHT_SCANNER = 0.045
+
 # Voxel downsampling
 VOXEL_SIZE = 0.005
+
+# Filter based on colors
+FILTER_COLOR = (0,0,0)  # black
+COLOR_THRESHOLD = 0.1
 
 # Radius outlier removal
 NB_POINTS = 25

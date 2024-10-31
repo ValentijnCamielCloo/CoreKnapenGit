@@ -12,6 +12,7 @@ import csv
 import constants as c
 import pandas as pd
 import logging
+import time
 
 
 # Configure logging
@@ -94,7 +95,7 @@ def get_scan_date_time(scan_number):
         return None, None
 
 
-def elbow_method(normals, save_path, max_k=10):
+def elbow_method(normals, save_path, max_k=10, show_figure=False):
     """
     Apply the elbow method to find the optimal number of clusters for the input data.
 
@@ -121,21 +122,22 @@ def elbow_method(normals, save_path, max_k=10):
     knee_locator = KneeLocator(k_range, inertia_values, curve='convex', direction='decreasing')
     optimal_k = knee_locator.elbow
 
-    # Plot the elbow graph to visualize inertia over different k values
-    plt.plot(k_range, inertia_values, 'bx-')
-    plt.xlabel('Number of clusters (k)')
-    plt.ylabel('Inertia')
-    plt.title(f'Elbow Method for Optimal k (Elbow at k={optimal_k})')
+    if show_figure:
+        # Plot the elbow graph to visualize inertia over different k values
+        plt.plot(k_range, inertia_values, 'bx-')
+        plt.xlabel('Number of clusters (k)')
+        plt.ylabel('Inertia')
+        plt.title(f'Elbow Method for Optimal k (Elbow at k={optimal_k})')
 
-    # Highlight the elbow point on the plot with a vertical dashed red line
-    plt.axvline(x=optimal_k, color='red', linestyle='--')
+        # Highlight the elbow point on the plot with a vertical dashed red line
+        plt.axvline(x=optimal_k, color='red', linestyle='--')
 
-    # Save the elbow plot to the specified directory as a PNG file
-    path = os.path.join(save_path, 'elbow_plot.png')
-    plt.savefig(path, format='png', dpi=300)
+        # Save the elbow plot to the specified directory as a PNG file
+        path = os.path.join(save_path, 'elbow_plot.png')
+        plt.savefig(path, format='png', dpi=300)
 
-    # Show the plot for immediate visualization
-    plt.show()
+        # Show the plot for immediate visualization
+        plt.show()
 
     return optimal_k
 
@@ -254,34 +256,46 @@ class PointCloud:
 
             plotter = pv.Plotter()
 
-            for pc in self.pcd:
-                # Extract points and colors from Open3D point cloud
+            for i, pc in enumerate(self.pcd):
+                # Extract points and colors from Open3D point cloud and create PyVista point cloud
                 points = np.asarray(pc.points)
+                point_cloud = pv.PolyData(points)
+
                 if pc.has_colors() and original_colors:
                     colors = np.asarray(pc.colors)  # Colors in Open3D are normalized (0-1)
                     colors = (colors * 255).astype(np.uint8)  # Convert to 0-255 for PyVista
+                    if colors is not None:
+                        point_cloud['RGB'] = colors  # Add color data to PyVista object
+                    plotter.add_points(point_cloud, scalars='RGB', rgb=True)  # Plot with RGB colors
+
                 else:
-                    random_color = np.random.randint(0, 256, size=(1, 3),
-                                                     dtype=np.uint8)  # Generate one random RGB color
-                    colors = np.tile(random_color, (len(points), 1))
-
-                # Create a PyVista point cloud mesh
-                point_cloud = pv.PolyData(points)
-                if colors is not None:
-                    point_cloud['RGB'] = colors  # Add color data to PyVista object
-
-                plotter.add_points(point_cloud, scalars='RGB', rgb=True)  # Plot with RGB colors
+                    colors = ['blue', 'orange', 'green', 'red', 'yellow', 'pink']
+                    plotter.add_points(point_cloud, color=colors[i])
 
             if title:
                 plotter.add_title(title, font_size=12)
 
-            plotter.show()
+            plotter.show(auto_close=False)
 
             if save_as_png:
                 filename = title.replace(" ", "_") + ".png"
                 save_path = os.path.join(self.output_dir, filename)
                 plotter.screenshot(save_path)
                 print(f"Visualization saved as {save_path}")
+
+            rotation_speed = 1
+            display_time = 0.01
+            # Rotate 360 degrees
+            for _ in range(0, 360, rotation_speed):
+                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                plotter.render()
+                time.sleep(display_time)
+
+            # Add a one-second delay before closing
+            time.sleep(1)
+
+            # Close the window after rotation
+            plotter.close()
 
         else:
             print("! No point cloud data to visualize.")
@@ -322,15 +336,12 @@ class PointCloud:
                     file_path = os.path.join('robot', csv_coordinates)
                     path_coordinates = pd.read_csv(file_path)
 
-                    x_middle = path_coordinates.iloc[0]['x'] + 0.3
-                    y_middle = path_coordinates.iloc[2]['y'] - 0.3
+                    x_middle = path_coordinates.iloc[0]['x']
+                    y_middle = path_coordinates.iloc[2]['y']
                     z_middle = 0
 
                     centroid = np.array([x_middle, y_middle, z_middle])
 
-                    # # Calculate the mean for x, y, and z to get the centroid
-                    # coordinates = path_coordinates[['x', 'y', 'z']].to_numpy()  # Extract as NumPy array
-                    # centroid = coordinates.mean(axis=0)  # Calculate mean along the rows
                     print(f'centroid: {centroid}')
                     pc.orient_normals_towards_camera_location(camera_location=centroid)
 
@@ -369,7 +380,7 @@ class PointCloud:
                 pcd.append(pc)
 
             self.pcd = pcd
-            self._save_ply("downsampled", folder='downsampled')
+            self._save_ply("downsampled")
 
         else:
             print("! No point cloud data to downsample.")
@@ -398,7 +409,7 @@ class PointCloud:
                 print(f'number of removed points: {points_start - points_end}')
 
             self.pcd = clean_pcd
-            self._save_ply("radius_filtered", folder='radius_filtered')
+            self._save_ply("radius_filtered")
 
         else:
             print("! No point cloud data to filter the outliers.")
@@ -474,9 +485,47 @@ class PointCloud:
                 # o3d.visualization.draw_geometries([filtered_pcd], point_show_normal=True)
 
             self.pcd = filtered
+            self._save_ply('filtered_normals')
 
         else:
             print("! No point cloud data to filter the outliers.")
+
+    def filter_colors(self, filter_color, color_threshold):
+        """
+        Filters out points in a point cloud based on a specified color.
+
+        Parameters:
+            filter_color (tuple): RGB color to filter out, as a tuple (r, g, b), where each value is between 0 and 1.
+            color_threshold (float): Threshold for color filtering. Points within this range of `filter_color` will be removed.
+        """
+        if self.pcd:
+            if type(self.pcd) is not list:
+                self.pcd = [self.pcd]
+
+            filtered = []
+            for pc in self.pcd:
+                # Convert to numpy for easy color filtering
+                points = np.asarray(pc.points)
+                colors = np.asarray(pc.colors)
+
+                # Create a mask for points that are NOT close to the specified filter color
+                non_filtered_mask = ~((np.abs(colors[:, 0] - filter_color[0]) < color_threshold) &
+                                      (np.abs(colors[:, 1] - filter_color[1]) < color_threshold) &
+                                      (np.abs(colors[:, 2] - filter_color[2]) < color_threshold))
+
+                # Apply the mask to filter points and colors
+                filtered_points = points[non_filtered_mask]
+                filtered_colors = colors[non_filtered_mask]
+
+                # Create a new point cloud with filtered points and colors
+                filtered_pc = o3d.geometry.PointCloud()
+                filtered_pc.points = o3d.utility.Vector3dVector(filtered_points)
+                filtered_pc.colors = o3d.utility.Vector3dVector(filtered_colors)
+
+                filtered.append(filtered_pc)
+
+            self.pcd = filtered
+            self._save_ply('filtered_colors')
 
     def initial_alignment(self):
         """
@@ -531,10 +580,10 @@ class PointCloud:
             coordinate_frames.append(coord_frame)
             init_aligned_pcd.append(self.pcd)
 
-        self._save_ply('scan',folder='scans',point_cloud=loaded_scan_files)
+        self._save_ply('scan', point_cloud=loaded_scan_files)
         # o3d.visualization.draw_geometries((init_aligned_pcd + coordinate_frames), window_name="Transformed Scans Visualization")
         self.pcd = init_aligned_pcd
-        self._save_ply('transformed_scans', folder='transformed')
+        self._save_ply('transformed_scans')
 
     def registration(self):
         """
@@ -609,68 +658,73 @@ class PointCloud:
         else:
             print("! No point cloud data for registration.")
 
-    def cluster_kmeans_normals(self, max_k=10, remove_ground=True, biggest_cluster=False):
+    def cluster_kmeans_normals(self, max_k=10, remove_ground=False, biggest_cluster=False, show_elbow=False):
         """
         Cluster the point cloud based on normals using KMeans and the elbow method.
 
         Parameters:
         - mak_k (int) = maximum number of k to search for (default=10).
-        - remove_ground (boolean) = filter out the cluster with normal pointing up (default=True).
+        - remove_ground (boolean) = filter out the cluster with normal pointing up (default=False).
         - biggest_cluster (boolean) = only keep the biggest cluster (default=False).
         """
         if self.pcd:
-            if type(self.pcd) is list:
-                merged_pcd = self.pcd[0]
-                for pc in self.pcd[1:]:
-                    merged_pcd += pc
-                self.pcd = merged_pcd
+            if type(self.pcd) is not list:
+                self.pcd = [self.pcd]
 
             print('\nClustering point cloud based on normals...')
-            # Ensure that the point cloud has normals computed
-            if not self.pcd.has_normals():
-                self.estimate_normals()
+            clustering = []
+            for pc in self.pcd:
+                # Ensure that the point cloud has normals computed
+                if not pc.has_normals():
+                    self.estimate_normals(orientate_not_middle=True)
 
-            normals = np.asarray(self.pcd.normals)
+                normals = np.asarray(pc.normals)
 
-            # Automatically choose the optimal number of clusters
-            n_clusters = elbow_method(normals, self.output_dir, max_k=max_k)
-            print(f"Optimal k-clusters: {n_clusters}")
+                # Automatically choose the optimal number of clusters
+                if show_elbow:
+                    show_figure = True
+                else:
+                    show_figure = False
+                n_clusters = elbow_method(normals, self.output_dir, max_k=max_k, show_figure=show_figure)
+                print(f"Optimal k-clusters: {n_clusters}")
 
-            # Apply KMeans clustering
-            clustering = KMeans(n_clusters=n_clusters, random_state=0).fit(normals)
+                # Apply KMeans clustering
+                kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(normals)
 
-            # Get cluster labels
-            labels = clustering.labels_
-            max_label = labels.max()
-            clusters = []
-            cluster_length = []
+                # Get cluster labels
+                labels = kmeans.labels_
+                max_label = labels.max()
+                clusters = []
+                cluster_length = []
 
-            for i in range(max_label + 1):
-                indices = np.where(labels == i)[0]
-                cluster = self.pcd.select_by_index(indices)
-                clusters.append(cluster)
-                cluster_length.append(len(cluster.points))
+                for i in range(max_label + 1):
+                    indices = np.where(labels == i)[0]
+                    cluster = pc.select_by_index(indices)
+                    clusters.append(cluster)
+                    cluster_length.append(len(cluster.points))
 
-            if remove_ground:
-                non_upward_clusters = []
-                for i, cluster in enumerate(clusters):
-                    # Calculate the mean normal of the cluster
-                    mean_normal = np.mean(np.asarray(cluster.normals), axis=0)
+                if remove_ground:
+                    non_upward_clusters = []
+                    for i, cluster in enumerate(clusters):
+                        # Calculate the mean normal of the cluster
+                        mean_normal = np.mean(np.asarray(cluster.normals), axis=0)
 
-                    if abs(mean_normal[2]) <= 0.5:  # Z-component threshold
-                        non_upward_clusters.append(cluster)
+                        if abs(mean_normal[2]) <= 0.5:  # Z-component threshold
+                            non_upward_clusters.append(cluster)
 
-                clusters = non_upward_clusters  # Update clusters to only keep non-upward clusters
+                    clusters = non_upward_clusters  # Update clusters to only keep non-upward clusters
 
-            if biggest_cluster:
-                max_length_index = np.argmax(cluster_length)
-                clusters = clusters[max_length_index]
-                clusters = [clusters]
+                if biggest_cluster:
+                    max_length_index = np.argmax(cluster_length)
+                    clusters = clusters[max_length_index]
 
-            print(f"Number of clusters after filtering: {len(clusters)}")
+                clustering.append(clusters)
 
-            self.pcd = clusters
-            self._save_ply('cluster_kmeans', folder='cluster_kmeans')
+            self.pcd = clustering
+            if len(self.pcd) == 1:
+                self.pcd = self.pcd[0]
+
+            self._save_ply('cluster_kmeans')
 
         else:
             print("! No point cloud data for clustering.")
@@ -682,42 +736,45 @@ class PointCloud:
         Parameters:
         - eps (float): Maximum distance between two points to be considered in the same cluster.
         - min_samples (int): Minimum number of points in a neighborhood to form a core point.
-        - remove_small_clusters (bool): Whether to remove small clusters.
+        - biggest_cluster (bool): if True, only the biggest cluster is saved (default=True).
         """
         if self.pcd:
-            if type(self.pcd) is list:
-                merged_pcd = self.pcd[0]
-                for pc in self.pcd[1:]:
-                    merged_pcd += pc
-                self.pcd = merged_pcd
-
+            if type(self.pcd) is not list:
+                self.pcd = [self.pcd]
+            print(self.pcd)
             print('\nRemoving surrounding objects with DBSCAN clustering...')
-            points = np.asarray(self.pcd.points)
+            clustering = []
+            for pc in self.pcd:
+                points = np.asarray(pc.points)
 
-            # Apply DBSCAN clustering
-            clustering = DBSCAN(eps=eps, min_samples=min_samples).fit(points)
+                # Apply DBSCAN clustering
+                dbscan = DBSCAN(eps=eps, min_samples=min_samples).fit(points)
 
-            # Get cluster labels
-            labels = clustering.labels_
-            max_label = labels.max()
-            clusters = []
-            cluster_length = []
+                # Get cluster labels
+                labels = dbscan.labels_
+                max_label = labels.max()
+                clusters = []
+                cluster_length = []
 
-            for i in range(max_label + 1):
-                indices = np.where(labels == i)[0]
-                cluster = self.pcd.select_by_index(indices)
-                clusters.append(cluster)
-                cluster_length.append(len(cluster.points))
-                # print(f"Cluster {i} has {len(cluster.points)} points.")
+                for i in range(max_label + 1):
+                    indices = np.where(labels == i)[0]
+                    cluster = pc.select_by_index(indices)
+                    clusters.append(cluster)
+                    cluster_length.append(len(cluster.points))
+                    # print(f"Cluster {i} has {len(cluster.points)} points.")
 
-            if biggest_cluster:
-                max_length_index = np.argmax(cluster_length)
-                clusters = clusters[max_length_index]
-                clusters = [clusters]
+                if biggest_cluster:
+                    max_length_index = np.argmax(cluster_length)
+                    clusters = clusters[max_length_index]
 
-            print(f"Number of clusters after filtering: {len(clusters)}")
+                clustering.append(clusters)
 
-            self.pcd = clusters
+                # print(f"Number of clusters after filtering: {len(clusters)}")
+
+            self.pcd = clustering
+            if len(self.pcd) == 1:
+                self.pcd = self.pcd[0]
+
             self._save_ply('cluster_DBSCAN')
 
         else:
@@ -779,51 +836,6 @@ class PointCloud:
         else:
             print("! No point cloud data for rotating.")
 
-    # def translate(self):
-    #     """
-    #     OVERBODIG GEWORDEN!!
-    #     Translate the point cloud to the origin, in which the model is also located.
-    #     This is the second step of aligning the point cloud and the model.
-    #
-    #     """
-    #     if self.pcd:
-    #         if type(self.pcd) is list:
-    #             merged_pcd = self.pcd[0]
-    #             for pc in self.pcd[1:]:
-    #                 merged_pcd += pc
-    #             self.pcd = merged_pcd
-    #         pc = self.pcd
-    #
-    #         print('\nTranslate the point cloud towards the origin (0,0)...')
-    #         # Find the minimal coordinates to create a new corner
-    #         min_point = pc.get_min_bound()
-    #         min_x = min_point[0]
-    #         min_y = min_point[1]
-    #         min_z = min_point[2]
-    #
-    #         corner_point = np.array([min_x, min_y, min_z])
-    #         print(f'New corner point: {corner_point}')
-    #
-    #         # Translate both point clouds so the new corner point is at the origin
-    #         translation_vector = -corner_point
-    #
-    #         # Perform translation on the points and normals
-    #         points = np.asarray(pc.points)
-    #         normals = np.asarray(pc.normals)
-    #
-    #         translated_points = points + translation_vector
-    #         translated_normals = normals + translation_vector
-    #
-    #         # Update the point cloud with rotated points and normals
-    #         pc.points = o3d.utility.Vector3dVector(translated_points)
-    #         pc.normals = o3d.utility.Vector3dVector(translated_normals)
-    #
-    #         self.pcd = pc
-    #         self._save_ply('translated')
-    #
-    #     else:
-    #         print("! No point cloud data for translation.")
-
     def translate(self, dist_scanner_obj, height_scanner):
         # Find the CSV file with format {ddmmyyyy}_path_coordinates.csv
         csv_coordinates = None
@@ -875,8 +887,7 @@ class PointCloud:
         else:
             print("! No point cloud data for translation.")
 
-
-    def _save_ply(self, file_name, folder=None, point_cloud=None):
+    def _save_ply(self, file_name, point_cloud=None):
         """
         Save the point cloud(s) with the given file name to PLY files, in sequential order.
 
@@ -891,8 +902,8 @@ class PointCloud:
             if type(point_cloud) is not list:
                 point_cloud = [point_cloud]
 
-            if folder:
-                folder_name = f'{self.save_counter}_{folder}'
+            if len(point_cloud) > 1:
+                folder_name = f'{self.save_counter}_{file_name}'
                 output_dir = os.path.join(self.output_dir, folder_name)
                 os.makedirs(output_dir, exist_ok=True)
 
@@ -902,18 +913,12 @@ class PointCloud:
             # Save each point cloud in the list with the current save counter prefix
             if len(point_cloud) > 1:
                 for i, pc in enumerate(point_cloud):
-                    if folder:
-                        save_path = os.path.join(output_dir, f"{file_name}_{i}.ply")
-                    else:
-                        save_path = os.path.join(output_dir, f"{self.save_counter}_{file_name}_{i}.ply")
+                    save_path = os.path.join(output_dir, f"{file_name}_{i}.ply")
                     o3d.io.write_point_cloud(save_path, pc)
                     print(f"Saved: {save_path}")
             else:
                 for pc in point_cloud:
-                    if folder:
-                        save_path = os.path.join(output_dir, f"{file_name}.ply")
-                    else:
-                        save_path = os.path.join(output_dir, f"{self.save_counter}_{file_name}.ply")
+                    save_path = os.path.join(output_dir, f"{self.save_counter}_{file_name}.ply")
                     o3d.io.write_point_cloud(save_path, pc)
                     print(f"Saved: {save_path}")
 
@@ -975,9 +980,6 @@ class Mesh:
 
         print(f"\nUsing the latest facade order file: {latest_excel_file}")
 
-        # Prepare list to store the loaded meshes
-        self.meshes = []
-
         # Loop through each facade specified in the Excel file
         for facade in facade_data['facade']:
             # Construct the mesh filename using the date and facade name
@@ -1010,7 +1012,7 @@ class Mesh:
 
             plotter = pv.Plotter()
 
-            for mesh in self.meshes:
+            for i, mesh in enumerate(self.meshes):
                 if show_normals:
                     if mesh.n_points > 0 and 'Normals' not in mesh.point_data.keys():
                         mesh.compute_normals(inplace=True)
@@ -1026,13 +1028,13 @@ class Mesh:
                         plotter.add_mesh(arrow, color='red')
 
                 # Generate a random color for each mesh
-                color = np.random.rand(3)  # Random color [R, G, B]
-                plotter.add_mesh(mesh, color=color, show_edges=True)
+                color = ['blue', 'orange', 'green', 'red', 'yellow']
+                plotter.add_mesh(mesh, color=color[i], show_edges=True)
 
             if title:
                 plotter.add_title(title, font_size=12)
 
-            plotter.show()
+            plotter.show(auto_close=False)
 
             if save_as_png:
                 filename = title.replace(" ", "_") + ".png"
@@ -1040,18 +1042,41 @@ class Mesh:
                 plotter.screenshot(save_path)
                 print(f"Mesh visualization saved as {save_path}")
 
+            rotation_speed = 1
+            display_time = 0.01
+            # Rotate 360 degrees
+            for _ in range(0, 360, rotation_speed):
+                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                plotter.render()
+                time.sleep(display_time)
+
+            # Close the window after rotation
+            plotter.close()
+
         else:
             print("! No meshes loaded to visualize.")
 
     def _save_meshes(self, file_name="mesh"):
         """
         Save all loaded meshes to the latest output directory with a given filename prefix.
+
         """
         if self.meshes:
+            if type(self.meshes) is not list:
+                self.meshes = [self.meshes]
+
+            if len(self.meshes) > 1:
+                folder_name = file_name
+                output_dir = os.path.join(self.output_dir, folder_name)
+                os.makedirs(output_dir, exist_ok=True)
+            else:
+                output_dir = self.output_dir
+
             for i, mesh in enumerate(self.meshes):
-                save_path = os.path.join(self.output_dir, f"{file_name}_{i}.ply")
+                save_path = os.path.join(output_dir, f"{file_name}_{i}.ply")
                 mesh.save(save_path)
-                # print(f"Saved mesh {i} as {save_path}")
+                print(f"Saved: {save_path}")
+
         else:
             print("! No meshes to save.")
 
@@ -1301,39 +1326,27 @@ class ComparePCDMesh:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
-            for pc in self.pcd:
-                # points_pc = np.asarray(pc.points)
-                # if pc.has_colors() and original_colors:
-                #     color = np.asarray(pc.colors)  # Colors in Open3D are normalized (0-1)
-                #     color = (color * 255).astype(np.uint8)  # Convert to 0-255 for PyVista
-                # else:
-                #     color = 'lightblue'
-                # pc = pv.PolyData(points_pc)
-                # plotter.add_mesh(pc, color=color)
-
-                # Extract points and colors from Open3D point cloud
+            for i, pc in enumerate(self.pcd):
+                # Extract points and colors from Open3D point cloud and create PyVista point cloud
                 points = np.asarray(pc.points)
+                point_cloud = pv.PolyData(points)
+
                 if pc.has_colors() and original_colors:
                     colors = np.asarray(pc.colors)  # Colors in Open3D are normalized (0-1)
                     colors = (colors * 255).astype(np.uint8)  # Convert to 0-255 for PyVista
+                    if colors is not None:
+                        point_cloud['RGB'] = colors  # Add color data to PyVista object
+                    plotter.add_points(point_cloud, scalars='RGB', rgb=True)  # Plot with RGB colors
+
                 else:
-                    random_color = np.random.randint(0, 256, size=(1, 3),
-                                                     dtype=np.uint8)  # Generate one random RGB color
-                    colors = np.tile(random_color, (len(points), 1))
-
-                # Create a PyVista point cloud mesh
-                point_cloud = pv.PolyData(points)
-                if colors is not None:
-                    point_cloud['RGB'] = colors  # Add color data to PyVista object
-
-                plotter.add_points(point_cloud, scalars='RGB', rgb=True)  # Plot with RGB colors
-
+                    colors = ['blue', 'orange', 'green', 'red', 'yellow', 'pink']
+                    plotter.add_points(point_cloud, color=colors[i])
 
             # Add a title if there is one
             if title:
                 plotter.add_title(title, font_size=12)
 
-            plotter.show()
+            plotter.show(auto_close=False)
 
             # Save the image as png with title as filename if save_as_png=True
             if save_as_png:
@@ -1341,6 +1354,20 @@ class ComparePCDMesh:
                 save_path = os.path.join(self.output_dir, filename)
                 plotter.screenshot(save_path)
                 print(f"Point cloud and mesh visualization saved as {save_path}")
+
+            rotation_speed = 1
+            display_time = 0.01
+            # Rotate 360 degrees
+            for _ in range(0, 360, rotation_speed):
+                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                plotter.render()
+                time.sleep(display_time)
+
+            # Add a one-second delay before closing
+            time.sleep(1)
+
+            # Close the window after rotation
+            plotter.close()
 
         else:
             print("! No point clouds or meshes loaded to visualize.")
@@ -1390,13 +1417,7 @@ class ComparePCDMesh:
             if title:
                 plotter.add_title(title, font_size=12)
 
-            # plotter.camera_position = 'xz'
-            # plotter.camera.position = (-1, -1, 0.5)
-            # plotter.camera.focal_point = (0, 0, 0.2)
-            # plotter.camera.viewup = (0, 0, 1)
-            # plotter.camera.zoom(1.7)
-
-            plotter.show()
+            plotter.show(auto_close=False)
 
             # Save the image as png with title as filename if save_as_png=True
             if save_as_png:
@@ -1405,8 +1426,22 @@ class ComparePCDMesh:
                 plotter.screenshot(save_path)
                 print(f"Results saved as {save_path}")
 
-            else:
-                print("! No point clouds or meshes loaded to visualize.")
+            rotation_speed = 1
+            display_time = 0.03
+            # Rotate 360 degrees
+            for _ in range(0, 360, rotation_speed):
+                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                plotter.render()
+                time.sleep(display_time)
+
+            # Add a one-second delay before closing
+            time.sleep(1)
+
+            # Close the window after rotation
+            plotter.close()
+
+        else:
+            print("! No point clouds or meshes loaded to visualize.")
 
     def write_results(self):
         """
