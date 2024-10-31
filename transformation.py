@@ -25,10 +25,32 @@ geometries = []
 # Get the current date and time for naming
 current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+def remove_black_points(scan):
+    """Remove black points (0, 0, 0) from the point cloud."""
+    points = np.asarray(scan.points)
+    colors = np.asarray(scan.colors)
+
+    # Create a mask to filter out black points
+    mask = ~(np.all(colors == [0, 0, 0], axis=1))
+    
+    # Apply the mask to points and colors
+    filtered_points = points[mask]
+    filtered_colors = colors[mask]
+
+    # Create a new point cloud with the filtered points and colors
+    filtered_scan = o3d.geometry.PointCloud()
+    filtered_scan.points = o3d.utility.Vector3dVector(filtered_points)
+    filtered_scan.colors = o3d.utility.Vector3dVector(filtered_colors)
+
+    return filtered_scan
+
 # Loop through each scan, set its position, and apply rotation
 for i, scan_file in enumerate(scan_files):
     scan_path = os.path.join(scans_folder_path, scan_file)
     scan = o3d.io.read_point_cloud(scan_path)
+
+    # Remove black points from the scan
+    scan = remove_black_points(scan)
 
     # Get the coordinates and rotation for each scan from CSV
     x, y, z = path_coordinates.loc[i, ['x', 'y', 'z']]
@@ -55,7 +77,7 @@ for i, scan_file in enumerate(scan_files):
     # Append scan and coordinate frame to the geometries list
     geometries.extend([scan, coord_frame])
 
-# Draw all scans with translations and rotations applied
-o3d.visualization.draw_geometries(geometries, window_name="Transformed Scans Visualization")
+    # Draw geometries to visualize the incremental build-up
+    o3d.visualization.draw_geometries(geometries, window_name=f"Transformed Scans Visualization - Up to Scan {i+2}")
 
 print(f"Transformed scans saved in: {transformed_folder_path}")

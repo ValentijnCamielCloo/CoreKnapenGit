@@ -13,12 +13,12 @@ output_folder_path = r"D:\TUdelftGitCore\CoreKnapenGit\Colored"
 # Ensure output folder exists
 os.makedirs(output_folder_path, exist_ok=True)
 
-# Load scale values from CSV
-scale_df = pd.read_csv(r"D:\TUdelftGitCore\CoreKnapenGit\Scan_Color_scale.csv")
-scale_values = {row['Scan']: row['Scale'] for index, row in scale_df.iterrows()}
-
 # Get all .ply files in the directory
 ply_files = glob.glob(os.path.join(scans_folder_path, "*.ply"))
+
+# Load scale values from CSV
+scale_df = pd.read_csv(r"D:\TUdelftGitCore\CoreKnapenGit\Scan_Color_scale.csv")
+scale_values = {row['Scan']: float(row['Scale']) for index, row in scale_df.iterrows()}  # Ensure scale is float
 
 # Iterate through all PLY files
 for ply_file in ply_files:
@@ -30,14 +30,22 @@ for ply_file in ply_files:
     colors = np.asarray(point_cloud.colors)
 
     # Get the scan name from the file name
-    scan_name = os.path.basename(ply_file).split('_')[0]  # e.g., "Scan_1"
+    scan_name = "_".join(os.path.basename(ply_file).split('_')[0:2])  # e.g., "Scan_4"
 
     # Get the corresponding scale value
     scale_value = scale_values.get(scan_name, 4.1)  # Default scale if not found
 
+    # Debug statement for scale value
+    if scan_name in scale_values:
+        print(f"Found scale value for {scan_name}: {scale_value}")
+    else:
+        print(f"No scale value found for {scan_name}. Using default scale value: {scale_value}")
+
     # Scale the colors
     colors_scaled = np.clip(colors * scale_value, 0, 1)
     point_cloud.colors = o3d.utility.Vector3dVector(colors_scaled)
+
+    # (rest of your code continues...)
 
     # Filter out white colors
     non_white_mask = ~np.all(colors_scaled > 0.95, axis=1)
@@ -88,10 +96,10 @@ for ply_file in ply_files:
             return (255, 0, 0)  # Assign red
         elif ranges[1][0] <= red_value < ranges[1][1]:
             color_hist_data['Dark Green'].append(red_value)
-            return (35, 157, 64)  # Assign dark green
+            return (255, 255, 68)  # Assign dark green
         elif ranges[2][0] <= red_value < ranges[2][1]:
             color_hist_data['Yellow'].append(red_value)
-            return (255, 255, 68)  # Assign yellow
+            return (35, 157, 64)  # Assign yellow
         else:
             color_hist_data['Blue'].append(red_value)
             return (0, 0, 255)  # Default to blue if no match

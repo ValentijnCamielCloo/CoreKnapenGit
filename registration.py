@@ -5,6 +5,7 @@ import datetime
 import csv
 from xx3_functions_registration import draw_registration_result_original_color
 
+#2,3,4,9,8,5,6
 # Define the folder paths
 scans_folder_path = r'D:\TUdelftGitCore\CoreKnapenGit\transformed'
 output_base_folder = r'D:\TUdelftGitCore\CoreKnapenGit\ProgressPilotRegistration'
@@ -20,7 +21,7 @@ print(ply_files)
 
 # Define multi-scale parameters for Colored ICP registration
 voxel_radius = [0.005, 0.005, 0.005]
-max_iter = [100, 80, 50]
+max_iter = [300, 80, 50]
 current_transformation = np.identity(4)
 
 # Initialize cumulative point cloud with the first scan
