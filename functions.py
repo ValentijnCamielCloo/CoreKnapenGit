@@ -13,6 +13,7 @@ import constants as c
 import pandas as pd
 import logging
 import time
+import glob
 
 
 # Configure logging
@@ -190,14 +191,11 @@ class PointCloud:
         Initialize the PointCloud with the given point cloud file path.
         Automatically create an output directory with a unique number and timestamp
         inside the 'ProgressPilot' main directory.
+
         """
-        # self.file_name_pcd = file_name_pcd
-        self.file_path = None
+        # self.file_path = None
         self.save_counter = 1
         self.pcd = None
-
-        # Define file path as relative to the 'scans' folder
-        # self.file_path = os.path.join("scans")
 
         # Create the main 'ProgressPilot' directory if it doesn't exist
         main_dir = "ProgressPilot"
@@ -233,14 +231,18 @@ class PointCloud:
             os.makedirs(self.output_dir)
             logging.info(f"Output directory created: {self.output_dir}")
 
-    def load_pcd(self, filename):
+    def load_pcd(self, scan_dir):
         """
         Load the point cloud from the .ply file.
         """
-        file_dir = "scans"
+        scan_dir = scan_dir
+        self.pcd = []
+        scan_files = sorted([f for f in os.listdir(scan_dir) if f.endswith('.ply')])
         # logging.info(f"Loading point cloud from {self.file_path}")
-        file_path = os.path.join(file_dir, filename)
-        self.pcd = o3d.io.read_point_cloud(str(file_path))
+        for scan in scan_files:
+            file_path = os.path.join(scan_dir, scan)
+            pc = o3d.io.read_point_cloud(str(file_path))
+            self.pcd.append(pc)
 
     def visualize(self, title=None, save_as_png=False, original_colors=True):
         """
@@ -283,22 +285,217 @@ class PointCloud:
                 plotter.screenshot(save_path)
                 print(f"Visualization saved as {save_path}")
 
-            rotation_speed = 1
-            display_time = 0.01
-            # Rotate 360 degrees
-            for _ in range(0, 360, rotation_speed):
-                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
-                plotter.render()
-                time.sleep(display_time)
-
-            # Add a one-second delay before closing
-            time.sleep(1)
-
-            # Close the window after rotation
-            plotter.close()
+            # rotation_speed = 1
+            # display_time = 0.01
+            # # Rotate 360 degrees
+            # for _ in range(0, 360, rotation_speed):
+            #     plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+            #     plotter.render()
+            #     time.sleep(display_time)
+            #
+            # # Add a one-second delay before closing
+            # time.sleep(1)
+            #
+            # # Close the window after rotation
+            # plotter.close()
 
         else:
             print("! No point cloud data to visualize.")
+
+    def colorize(self):
+        if self.pcd:
+            if type(self.pcd) is not list:
+                self.pcd = [self.pcd]
+
+            # Get all .ply files in the directory
+            ply_files = glob.glob(os.path.join('scans', "*.ply"))
+
+            # Load the csv file to get the coordinates of the robot path
+            csv_scan_scales = 'scancolor_scale.csv'
+            file_path = os.path.join('scans', csv_scan_scales)
+            scan_scales = pd.read_csv(file_path)
+            scale_values = {row['Scan']: float(row['Scale']) for index, row in scan_scales.iterrows()}  # Ensure scale is float
+
+            colorized = []
+            for i, pc in enumerate(self.pcd):
+                # Get the colors from the point cloud
+                colors = np.asarray(pc.colors)
+
+                # Get the scan name from the file name
+                scan_name = "_".join(os.path.basename(ply_files[i]).split('_')[0:2])  # e.g., "Scan_4"
+
+                # Get the corresponding scale value
+                scale_value = scale_values.get(scan_name, 4.1)  # Default scale if not found is 4.1
+
+                # Scale the colors
+                colors_scaled = np.clip(colors * scale_value, 0, 1)
+                pc.colors = o3d.utility.Vector3dVector(colors_scaled)
+
+                # Filter out white colors
+                non_white_mask = ~np.all(colors_scaled > 0.95, axis=1)
+                non_white_colors = colors_scaled[non_white_mask]
+
+                # Store red channel averages
+                red_channel_values = []
+
+                # Number of runs
+                num_runs = 50
+                for run in range(num_runs):
+                    # K-means clustering
+                    num_colors = 4
+                    kmeans = KMeans(n_clusters=num_colors, random_state=run)
+                    kmeans.fit(non_white_colors)
+
+                    color_labels = kmeans.labels_
+                    main_colors = kmeans.cluster_centers_
+
+                    # Collect red channel averages
+                    for i in range(num_colors):
+                        avg_rgb = (main_colors[i] * 255).astype(int)
+                        red_channel = avg_rgb[0]
+                        red_channel_values.append(red_channel)
+
+                # Estimate thresholds based on quantiles
+                red_channel_values = np.array(red_channel_values)
+                q1, q2, q3 = np.percentile(red_channel_values, [25, 50, 75])
+                ranges = [
+                    (0, q1),
+                    (q1, q2),
+                    (q2, q3),
+                    (q3, 255)
+                ]
+
+                # Prepare lists to store red channel values for each assigned color
+                color_hist_data = {
+                    'Red': [],
+                    'Dark Green': [],
+                    'Yellow': [],
+                    'Blue': [],
+                }
+
+                # Function to assign color based on red channel for scans [4, 6, 7, 8]
+                def assign_color_based_on_red_standard(red_value):
+                    if ranges[0][0] <= red_value < ranges[0][1]:
+                        color_hist_data['Red'].append(red_value)
+                        return (255, 0, 0)  # Assign red
+                    elif ranges[1][0] <= red_value < ranges[1][1]:
+                        color_hist_data['Dark Green'].append(red_value)
+                        return (35, 157, 64)  # Assign dark green
+                    elif ranges[2][0] <= red_value < ranges[2][1]:
+                        color_hist_data['Yellow'].append(red_value)
+                        return (255, 255, 68)  # Assign yellow
+                    else:
+                        color_hist_data['Blue'].append(red_value)
+                        return (0, 0, 255)  # Assign blue
+
+                # Function to assign color with yellow and green switched for scans [2, 3, 5, 9]
+                def assign_color_based_on_red_switched(red_value):
+                    if ranges[0][0] <= red_value < ranges[0][1]:
+                        color_hist_data['Red'].append(red_value)
+                        return (255, 0, 0)  # Assign red
+                    elif ranges[1][0] <= red_value < ranges[1][1]:
+                        color_hist_data['Yellow'].append(red_value)
+                        return (255, 255, 68)  # Assign yellow (switched)
+                    elif ranges[2][0] <= red_value < ranges[2][1]:
+                        color_hist_data['Dark Green'].append(red_value)
+                        return (35, 157, 64)  # Assign dark green (switched)
+                    else:
+                        color_hist_data['Blue'].append(red_value)
+                        return (0, 0, 255)  # Assign blue
+
+                # Apply the appropriate coloring function based on the scan number
+                if int(scan_name.split("_")[1]) in [1, 2, 3, 5]:
+                    assign_color_based_on_red = assign_color_based_on_red_switched
+                else:
+                    assign_color_based_on_red = assign_color_based_on_red_standard
+
+                # Final coloring process based on average red channel values
+                uniform_colors = np.zeros_like(colors)
+                for run in range(num_runs):
+                    # K-means clustering again for coloring
+                    kmeans = KMeans(n_clusters=num_colors, random_state=run)
+                    kmeans.fit(non_white_colors)
+
+                    color_labels = kmeans.labels_
+                    for i in range(num_colors):
+                        avg_rgb = (kmeans.cluster_centers_[i] * 255).astype(int)
+                        red_channel = avg_rgb[0]
+                        cluster_points = (color_labels == i)
+                        original_indices = np.where(non_white_mask)[0][cluster_points]
+                        assigned_color = assign_color_based_on_red(red_channel)
+
+                        uniform_colors[original_indices] = np.array(assigned_color) / 255.0  # Normalize for Open3D
+
+                # Apply the colored array to the point cloud
+                pc.colors = o3d.utility.Vector3dVector(uniform_colors)
+                colorized.append(pc)
+
+            self.pcd = colorized
+            print(self.pcd)
+
+            # Save
+            # Define a path one level up from `output_folder`
+            parent_folder = os.path.join(self.output_dir, '..', '..')
+
+            # Resolve the relative path to an absolute path (optional but helps in complex scripts)
+            parent_folder = os.path.abspath(parent_folder)
+
+            # Create a subfolder within the parent directory (one level up) for saving files
+            parent_subfolder = os.path.join(parent_folder, "colorized")
+            os.makedirs(parent_subfolder, exist_ok=True)
+
+            for i, pc in enumerate(self.pcd):
+                # Now save files in this new directory
+                file_path_in_parent = os.path.join(parent_subfolder, f"colorized_{i}.ply")
+                # Save the point cloud as a .ply file using Open3D
+                o3d.io.write_point_cloud(file_path_in_parent, pc)
+
+                # self._save_ply('colorized')
+
+        else:
+            print('! No point clouds to colorize')
+
+    def translate_orientate(self):
+        if self.pcd:
+            if type(self.pcd) is not list:
+                self.pcd = [self.pcd]
+
+            # Find the CSV file with format {yyyymmdd}_path_coordinates.csv
+            csv_coordinates = None
+            for file in os.listdir('robot'):
+                if file.endswith('_path_coordinates.csv'):
+                    csv_coordinates = file
+
+            # Ensure a CSV file was found
+            if csv_coordinates is None:
+                print("! No path_coordinates file found.")
+                return []
+
+            # Load the csv file to get the coordinates of the robot path
+            file_path = os.path.join('robot', csv_coordinates)
+            path_coordinates = pd.read_csv(file_path)
+
+            translated_orientated = []
+            for i, pc in enumerate(self.pcd):
+                # Get the coordinates and rotation for each scan from CSV
+                x, y, z = path_coordinates.loc[i, ['x', 'y', 'z']]
+                base_rotation = path_coordinates.loc[i, 'rotation']
+
+                # Translate to the calculated coordinates
+                pc.translate((x, y, z))
+
+                # Apply an additional rotation for each scan based on the step
+                additional_rotation_angle = np.pi / 4 * i  # 45 degrees per scan
+                r_additional = o3d.geometry.get_rotation_matrix_from_axis_angle([0, 0, additional_rotation_angle])
+                pc.rotate(r_additional, center=(x, y, z))
+
+                translated_orientated.append(pc)
+
+            self.pcd = translated_orientated
+            self._save_ply('translated_orientated')
+
+        else:
+            print('! No point clouds to translate and orientate')
 
     def estimate_normals(self, radius=0.1, max_nn=30, orientate_camera=False, orientate_not_middle=False, point_cloud=None, visualize_normals=False):
         """
@@ -596,61 +793,116 @@ class PointCloud:
                 self.pcd = [self.pcd]
 
             # Define multi-scale parameters for Colored ICP registration
-            voxel_radius = [0.04, 0.02, 0.01]
-            max_iter = [50, 30, 14]
+            voxel_radius = [0.005, 0.005, 0.005]
+            max_iter = [300, 80, 50]
             current_transformation = np.identity(4)
-            print(self.pcd[2])
 
-            cumulative_pcd = self.pcd[0]
-            for i in range(1, len(self.pcd)):
-                print(f'i = {i}, self_pcd[i] = {self.pcd[i]}')
-                source_pcd = self.pcd[i]
-                print(f"Registering {cumulative_pcd} to {source_pcd}")
+            # Initialize cumulative point cloud with the first scan
+            cumulative_cloud = self.pcd[0]
 
-                # Multi-scale registration using Colored ICP
-                for scale in range(3):
-                    iteration = max_iter[scale]
-                    radius = voxel_radius[scale]
-                    print(f"Scale {scale + 1} - Iterations: {iter}, Voxel size: {radius}")
+            # Get all .ply files in the directory
+            ply_files = glob.glob(os.path.join('scans', "*.ply"))
+            cumulative_name = ply_files[0]
 
-                    # Before registration, show current counts
-                    print(
-                        f"Before registration: Cumulative cloud has {len(cumulative_pcd.points)} points, Source has {len(source_pcd.points)} points.")
+            # Export the initial cumulative cloud
+            # initial_registered_path = os.path.join(output_folder, "Registered_0.ply")
+            # o3d.io.write_point_cloud(initial_registered_path, cumulative_cloud)
 
-                    # Downsample cumulative cloud and source cloud
-                    cumulative_down = cumulative_pcd.voxel_down_sample(radius)
-                    source_down = source_pcd.voxel_down_sample(radius)
+            # Create CSV file to store registration details
+            csv_file_path = os.path.join(self.output_dir, 'registered_path_coordinates.csv')
 
-                    # Estimate normals
-                    # self.estimate_normals(point_cloud=cumulative_down)
-                    # self.estimate_normals(point_cloud=source_down)
-                    cumulative_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 2, max_nn=30))
-                    source_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 2, max_nn=30))
+            # Open the CSV file outside the loop
+            with open(csv_file_path, mode='w', newline='') as csv_file:
+                csv_writer = csv.writer(csv_file)
+                csv_writer.writerow(
+                    ["Scan_source", "Scan_target", "X", "Y", "Z", "Rotation_X", "Rotation_Y", "Rotation_Z"])
 
-                    # Apply Colored ICP registration
-                    result_icp = o3d.pipelines.registration.registration_colored_icp(
-                        source_down, cumulative_down, radius, current_transformation,
-                        o3d.pipelines.registration.TransformationEstimationForColoredICP(),
-                        o3d.pipelines.registration.ICPConvergenceCriteria(relative_fitness=1e-6,
-                                                                          relative_rmse=1e-6,
-                                                                          max_iteration=iteration))
-                    current_transformation = result_icp.transformation
-                    print(f"ICP Result for Scale {scale + 1}:")
-                    # print(f"  Transformation matrix:\n{current_transformation}")
-                    print(f"  Fitness: {result_icp.fitness}, Inlier RMSE: {result_icp.inlier_rmse}")
+                # Load and register each scan iteratively
+                for i in range(1, len(ply_files)):
+                    # source_path = os.path.join(self.output_dir, ply_files[i])
+                    source = self.pcd[i]
+                    source_name = ply_files[i]
+                    # print(f"Registering {cumulative_name} to {source_name}")
 
-                    # Visualize after each scale
-                    scale_visualization = f"SCALE {scale + 1}: Source: {source_pcd}, Target: {cumulative_pcd} (after scale {scale + 1})"
-                    transformed_source = source_down.transform(current_transformation)
+                    # Visualize the source cloud before registration
+                    # initial_visualization = f"INITIAL ALIGNMENT: Source: {source_name}, Target: {cumulative_name}"
+                    # o3d.visualization.draw_geometries([source, cumulative_cloud], window_name=initial_visualization)
 
-                # Transform the source to align with the cumulative point cloud
-                source_pcd.transform(current_transformation)
+                    # Multi-scale registration using Colored ICP
+                    for scale in range(3):
+                        iteration = max_iter[scale]
+                        radius = voxel_radius[scale]
+                        print(f"Scale {scale + 1} - Iterations: {iter}, Voxel size: {radius}")
 
-                # Combine the cumulative cloud with the registered source
-                combined_cloud = cumulative_pcd + source_pcd
-                cumulative_pcd = combined_cloud
+                        # Before registration, show current counts
+                        # print(
+                            # f"Before registration: Cumulative cloud has {len(cumulative_cloud.points)} points, Source has {len(source.points)} points.")
 
-            self.pcd = cumulative_pcd
+                        # Downsample cumulative cloud and source cloud
+                        cumulative_down = cumulative_cloud.voxel_down_sample(radius)
+                        source_down = source.voxel_down_sample(radius)
+
+                        # Estimate normals
+                        cumulative_down.estimate_normals(
+                            o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 1, max_nn=30))
+                        source_down.estimate_normals(o3d.geometry.KDTreeSearchParamHybrid(radius=radius * 1, max_nn=30))
+
+                        # Apply Colored ICP registration
+                        result_icp = o3d.pipelines.registration.registration_colored_icp(
+                            source_down, cumulative_down, radius, current_transformation,
+                            o3d.pipelines.registration.TransformationEstimationForColoredICP(),
+                            o3d.pipelines.registration.ICPConvergenceCriteria(relative_fitness=1e-6,
+                                                                              relative_rmse=1e-6,
+                                                                              max_iteration=iteration))
+                        current_transformation = result_icp.transformation
+                        print(f"ICP Result for Scale {scale + 1}:")
+                        print(f"  Transformation matrix:\n{current_transformation}")
+                        print(f"  Fitness: {result_icp.fitness}, Inlier RMSE: {result_icp.inlier_rmse}")
+
+                        # Visualize after each scale
+                        scale_visualization = f"SCALE {scale + 1}: Source: {source_name}, Target: {cumulative_name} (after scale {scale + 1})"
+                        transformed_source = source_down.transform(current_transformation)
+                        # o3d.visualization.draw_geometries([transformed_source, cumulative_down],
+                        #                                   window_name=scale_visualization)
+
+                    # Transform the source to align with the cumulative point cloud
+                    source.transform(current_transformation)
+
+                    # Combine the cumulative cloud with the registered source
+                    combined_cloud = cumulative_cloud + source
+
+                    # Visualize the registered source and cumulative cloud
+                    window_title_registration = f"REGISTERED: Source: {source_name}, Target: {cumulative_name} (after registration)"
+                    # o3d.visualization.draw_geometries([combined_cloud], window_name=window_title_registration)
+
+                    # Calculate the final translation and rotation
+                    translation = current_transformation[:3, 3]
+                    rotation = (
+                        np.arctan2(current_transformation[1, 0], current_transformation[0, 0]),
+                        np.arctan2(-current_transformation[2, 0],
+                                   np.sqrt(current_transformation[2, 1] ** 2 + current_transformation[2, 2] ** 2)),
+                        np.arctan2(current_transformation[2, 1], current_transformation[2, 2])
+                    )
+
+                    # Convert rotation from radians to degrees
+                    rotation_degrees = tuple(np.degrees(rot) for rot in rotation)
+
+                    # Print the translation and rotation
+                    # print(
+                    #     f"Translation of source '{source_name}' compared to target '{cumulative_name}': {translation}")
+                    # print(
+                    #     f"Rotation of source '{source_name}' compared to target '{cumulative_name}': {rotation_degrees}")
+
+                    # Write the final translation and rotation to the CSV
+                    csv_writer.writerow([source_name, cumulative_name, translation[0], translation[1], translation[2],
+                                         *rotation_degrees])
+
+                    # Update cumulative_cloud and cumulative_name with the new registered source
+                    cumulative_cloud = combined_cloud
+                    # cumulative_name = f"Registered_{i}.ply"
+
+
+            self.pcd = cumulative_cloud
             # Export the combined registered source
             self._save_ply('registered')
             # o3d.io.write_point_cloud(self.pcd)

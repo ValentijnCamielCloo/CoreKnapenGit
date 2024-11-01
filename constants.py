@@ -1,5 +1,8 @@
 # Point Cloud processing
-FILENAME_PCD = "Registered_4_aligned_to_Scan_2.ply"
+# FILENAME_PCD = "Registered_4_aligned_to_Scan_2.ply"
+
+SCAN_DIR = 'scans'
+COLORIZED_DIR = 'colorized'
 
 DIST_SCANNER_OBJ = 0.3
 HEIGHT_SCANNER = 0.045

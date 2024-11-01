@@ -2,17 +2,35 @@ from functions import *
 import constants as c
 
 def main():
+    # # Create an instance of the point cloud
+    # pcd = PointCloud()
+    # pcd.load_pcd(scan_dir=c.SCAN_DIR)
+    # pcd.visualize(title='scans', save_as_png=True)
+    #
+    # # Correct the colors in the point clouds
+    # pcd.colorize()
+    # pcd.visualize(title='Colorized pcd', save_as_png=True)
+
     # Create an instance of the point cloud
     pcd = PointCloud()
-    pcd.load_pcd(filename=c.FILENAME_PCD)
+    pcd.load_pcd(scan_dir=c.COLORIZED_DIR)
+    pcd.visualize(title='Colorized loaded pcd', save_as_png=True)
+
+    # Remove ground (black points)
+    pcd.filter_colors(filter_color=c.FILTER_COLOR, color_threshold=c.COLOR_THRESHOLD)
+    pcd.visualize(title='Filtered on colors', save_as_png=True)
+
+    # Translate and orientate the point cloud to the same place as the model
+    pcd.translate_orientate()
+    pcd.visualize(title='Translated and orientated pcd', save_as_png=True)
+
+    # Registration of the scans to create one point cloud
+    pcd.registration()
+    pcd.visualize(title='Registered', save_as_png=True)
 
     # Downsample and filter point cloud
     pcd.voxel_downsample(voxel_size=c.VOXEL_SIZE)
     pcd.visualize(title='Downsampled', save_as_png=True)
-
-    # Filter on color
-    pcd.filter_colors(filter_color=c.FILTER_COLOR,color_threshold=c.COLOR_THRESHOLD)
-    pcd.visualize(title='Filtered on colors', save_as_png=True)
 
     # Cluster the four sides
     pcd.estimate_normals(orientate_not_middle=True, visualize_normals=False)
