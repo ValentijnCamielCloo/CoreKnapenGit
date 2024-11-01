@@ -3,6 +3,7 @@ import numpy as np
 import os
 import datetime
 import csv
+import matplotlib.pyplot as plt  # Import matplotlib for plotting
 from xx3_functions_registration import draw_registration_result_original_color
 
 # Define the folder paths
@@ -33,11 +34,12 @@ o3d.io.write_point_cloud(initial_registered_path, cumulative_cloud)
 
 # Create CSV file to store registration details
 csv_file_path = r'D:\TUdelftGitCore\CoreKnapenGit\registered_path_coordinates.csv'
-
 # Open the CSV file outside the loop
 with open(csv_file_path, mode='w', newline='') as csv_file:
     csv_writer = csv.writer(csv_file)
     csv_writer.writerow(["Scan_source", "Scan_target", "X", "Y", "Z", "Rotation_X", "Rotation_Y", "Rotation_Z"])
+
+    fitness_values = []  # List to store fitness values
 
     # Load and register each scan iteratively
     for i in range(1, len(ply_files)):
@@ -76,6 +78,9 @@ with open(csv_file_path, mode='w', newline='') as csv_file:
             print(f"  Transformation matrix:\n{current_transformation}")
             print(f"  Fitness: {result_icp.fitness}, Inlier RMSE: {result_icp.inlier_rmse}")
 
+            # Store the fitness value
+            fitness_values.append(result_icp.fitness)
+
             # Visualize after each scale
             scale_visualization = f"SCALE {scale + 1}: Source: {source_name}, Target: {cumulative_name} (after scale {scale + 1})"
             transformed_source = source_down.transform(current_transformation)
@@ -91,7 +96,7 @@ with open(csv_file_path, mode='w', newline='') as csv_file:
         window_title_registration = f"REGISTERED: Source: {source_name}, Target: {cumulative_name} (after registration)"
         o3d.visualization.draw_geometries([combined_cloud], window_name=window_title_registration)
 
-        # Calculate the final translation and rotation
+        # Calculate the final translation and rotation relative to the initial cumulative cloud (first scan's coordinate system)
         translation = current_transformation[:3, 3]
         rotation = (
             np.arctan2(current_transformation[1, 0], current_transformation[0, 0]),
@@ -117,5 +122,14 @@ with open(csv_file_path, mode='w', newline='') as csv_file:
         # Update cumulative_cloud and cumulative_name with the new registered source
         cumulative_cloud = combined_cloud
         cumulative_name = source_name  # keep original naming for logging and referencing
+
+# Plot fitness values at the end of the registration process
+plt.figure(figsize=(10, 5))
+plt.plot(fitness_values, marker='o', linestyle='-', color='b')
+plt.title('Fitness Values During Registration')
+plt.xlabel('Iteration (Scale)')
+plt.ylabel('Fitness Value')
+plt.grid(True)
+plt.show()
 
 print("Registration complete. All registered point clouds are exported individually with original names.")

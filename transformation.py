@@ -65,7 +65,7 @@ for i, scan_file in enumerate(scan_files):
     scan.rotate(R_additional, center=(x, y, z))
 
     # Save the transformed scan to the new folder
-    transformed_scan_filename = f"Scan_{i + 2}_{current_time}_Transformed.ply"  # Start numbering from Scan 2
+    transformed_scan_filename = f"Scan_{i + 1}_{current_time}_Transformed.ply"  # Start numbering from Scan 2
     transformed_scan_path = os.path.join(transformed_folder_path, transformed_scan_filename)
     o3d.io.write_point_cloud(transformed_scan_path, scan)
 
@@ -78,6 +78,6 @@ for i, scan_file in enumerate(scan_files):
     geometries.extend([scan, coord_frame])
 
     # Draw geometries to visualize the incremental build-up
-    o3d.visualization.draw_geometries(geometries, window_name=f"Transformed Scans Visualization - Up to Scan {i+2}")
+    o3d.visualization.draw_geometries(geometries, window_name=f"Transformed Scans Visualization - Up to Scan {i+1}")
 
 print(f"Transformed scans saved in: {transformed_folder_path}")

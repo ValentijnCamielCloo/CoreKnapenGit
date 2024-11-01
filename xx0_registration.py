@@ -1,104 +1,103 @@
-import open3d as o3d
 import numpy as np
+import pandas as pd
+import open3d as o3d
 import os
-import datetime
-from xx0_functions_registration import *
-from xx0_functions_registration import draw_registration_result_original_color
-\
-# Define the folder paths 
-scans_folder_path = r'D:\TUdelftGitCore\CoreKnapenGit\transformed'
-output_base_folder = r'D:\TUdelftGitCore\CoreKnapenGit\ProgressPilotRegistration'
+from datetime import datetime
 
-# Create a folder for the current run with date and time
-current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-output_folder = os.path.join(output_base_folder, f"ProgressPilotRegistration_{current_time}")
-os.makedirs(output_folder, exist_ok=True)
+# Define folder paths and file paths
+scans_folder_path = r'D:\TUdelftGitCore\CoreKnapenGit\Colored'
+calculated_csv_path = r'D:\TUdelftGitCore\CoreKnapenGit\Calculated_Path_Coordinates.csv'
+registered_csv_path = r'D:\TUdelftGitCore\CoreKnapenGit\registered_path_coordinates.csv'
+transformed_folder_path = os.path.join(scans_folder_path, 'Transformed')
 
-# Get all PLY files from the scans folder
-ply_files = sorted([f for f in os.listdir(scans_folder_path) if f.endswith(".ply")])
+# Create a new folder for transformed files if it doesn't exist
+os.makedirs(transformed_folder_path, exist_ok=True)
 
-# Start by loading the first scan as the initial "target" (basis)
-target_file = ply_files[0]
-target_path = os.path.join(scans_folder_path, target_file)
-target_pcd = o3d.io.read_point_cloud(target_path)
+# Read the calculated and registered coordinates from CSV
+calculated_coordinates = pd.read_csv(calculated_csv_path)
+registered_coordinates = pd.read_csv(registered_csv_path)
 
-# Loop over remaining scans and register each to the previous registered result
-for i in range(1, len(ply_files)):
-    source_file = ply_files[i]
-    source_path = os.path.join(scans_folder_path, source_file)
+# Initialize scan list and other parameters
+scan_files = sorted([f for f in os.listdir(scans_folder_path) if f.endswith('.ply')])
 
-    print(f"Processing: Source: {source_file}, Target: {target_file}")
+# Initialize geometries list to visualize all scans in one go
+geometries = []
 
-    coordinate_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.2, origin=[0, 0, 0])
+# Get the current date and time for naming
+current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+def remove_black_points(scan):
+    """Remove black points (0, 0, 0) from the point cloud."""
+    points = np.asarray(scan.points)
+    colors = np.asarray(scan.colors)
+
+    # Create a mask to filter out black points
+    mask = ~(np.all(colors == [0, 0, 0], axis=1))
     
+    # Apply the mask to points and colors
+    filtered_points = points[mask]
+    filtered_colors = colors[mask]
 
+    # Create a new point cloud with the filtered points and colors
+    filtered_scan = o3d.geometry.PointCloud()
+    filtered_scan.points = o3d.utility.Vector3dVector(filtered_points)
+    filtered_scan.colors = o3d.utility.Vector3dVector(filtered_colors)
 
-    # Read the next source point cloud
-    source_pcd = o3d.io.read_point_cloud(source_path)
-    # Visualize NON ROTATED source and target
-    window_title = f"Transformed: Source: {source_file}, Target: {target_file}"
-    o3d.visualization.draw_geometries([source_pcd, target_pcd, coordinate_frame], window_name=window_title)
+    return filtered_scan
 
-    # Downsample point clouds
-    voxel_size = 0.01
-    source_down, source_fpfh = preprocess_point_cloud(source_pcd, voxel_size)
-    target_down, target_fpfh  = preprocess_point_cloud(target_pcd, voxel_size)
-    window_title = f"DOWNSAMPLED: Source: {source_down}, Target: {target_down}"
-    o3d.visualization.draw_geometries([source_down, target_down, coordinate_frame], window_name=window_title)
+# Loop through each scan, set its position, and apply rotation
+for i, scan_file in enumerate(scan_files):
+    scan_path = os.path.join(scans_folder_path, scan_file)
+    scan = o3d.io.read_point_cloud(scan_path)
+
+    # Remove black points from the scan
+    scan = remove_black_points(scan)
+
+    # Get the calculated coordinates for the scan
+    x_calc, y_calc, z_calc = calculated_coordinates.loc[i, ['x', 'y', 'z']]
+    base_rotation_calc = calculated_coordinates.loc[i, 'rotation']
     
-    # Outlier removal
-    print("Removing outliers for source...")
-    _, ind_source = source_down.remove_statistical_outlier(nb_neighbors=40, std_ratio=0.5)
-    source_down = source_down.select_by_index(ind_source)
-    print("Removing outliers for target...")
-    _, ind_target = target_down.remove_statistical_outlier(nb_neighbors=40, std_ratio=0.5)
-    target_down = target_down.select_by_index(ind_target)
-    # Visualize OUTLIERS REMOVED source and target
-    window_title = f"OUTLIERS REMOVED: Source: {source_down}, Target: {target_down}"
-    o3d.visualization.draw_geometries([source_down, target_down, coordinate_frame], window_name=window_title)
+    # Get the registered transformation for the scan
+    if i > 0:  # Skip for the first scan
+        reg_scan_file = scan_files[i - 1]  # Previous scan file
+        reg_row = registered_coordinates[registered_coordinates['Scan_source'] == reg_scan_file]
+        if not reg_row.empty:
+            x_reg, y_reg, z_reg = reg_row[['X', 'Y', 'Z']].values[0]
+            rot_x, rot_y, rot_z = reg_row[['Rotation_X', 'Rotation_Y', 'Rotation_Z']].values[0]
+        else:
+            x_reg, y_reg, z_reg = 0, 0, 0
+            rot_x, rot_y, rot_z = 0, 0, 0
+    else:
+        x_reg, y_reg, z_reg = 0, 0, 0
+        rot_x, rot_y, rot_z = 0, 0, 0
 
+    # Calculate the final translation and rotation
+    final_x = x_calc + x_reg
+    final_y = y_calc + y_reg
+    final_z = z_calc + z_reg
+    final_rotation = base_rotation_calc + np.radians([rot_x, rot_y, rot_z])  # Adjust as needed
 
-    # Perform global registration to obtain initial alignment
-    global_trans = execute_global_registration(source_down, target_down, source_fpfh, target_fpfh, voxel_size)
-    print('globaltrans print:', global_trans)
-    # Visualize the registration result for global registration
-    source_temp = source_down.transform(global_trans.transformation)
-    window_title = f"Global Registration: Source: {source_temp}, Target: {target_down}"
-    o3d.visualization.draw_geometries([source_temp, target_down, coordinate_frame], window_name=window_title)
-    window_title = f"Global Registration: Source: {source_down}, Target: {target_down}"
-    o3d.visualization.draw_geometries([source_down, target_down, coordinate_frame], window_name=window_title)
+    # Translate to the final coordinates
+    scan.translate((final_x, final_y, final_z))
+    
+    # Apply final rotation
+    rotation_matrix = o3d.geometry.get_rotation_matrix_from_xyz(final_rotation)
+    scan.rotate(rotation_matrix, center=(final_x, final_y, final_z))
 
+    # Save the transformed scan to the new folder
+    transformed_scan_filename = f"Scan_{i + 1}_{current_time}_Transformed.ply"  # Start numbering from Scan 1
+    transformed_scan_path = os.path.join(transformed_folder_path, transformed_scan_filename)
+    o3d.io.write_point_cloud(transformed_scan_path, scan)
 
+    # Visualize coordinate frame for each scan
+    coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
+    coord_frame.translate((final_x, final_y, final_z))
+    coord_frame.rotate(rotation_matrix, center=(final_x, final_y, final_z))  # Apply rotation to coordinate frame as well
 
+    # Append scan and coordinate frame to the geometries list
+    geometries.extend([scan, coord_frame])
 
+    # Draw geometries to visualize the incremental build-up
+    o3d.visualization.draw_geometries(geometries, window_name=f"Transformed Scans Visualization - Up to Scan {i + 1}")
 
-
-
-    # Apply global transformation to the source cloud
-    source_pcd.transform(global_trans.transformation)
-    window_title = f"Global Registration: Source: {source_pcd}, Target: {target_down}"
-    o3d.visualization.draw_geometries([source_pcd, target_down, coordinate_frame], window_name=window_title)
-
-    # Perform local ICP registration to refine alignment
-    trans_local = execute_local_registration(source_down, target_down, voxel_size, global_trans.transformation)
-
-    # Visualize the registration result for local registration
-    source_temp = source_down.transform(trans_local.transformation)
-    window_title = f"Local Registration: Source: {source_temp}, Target: {target_down}"
-    o3d.visualization.draw_geometries([source_temp, target_down, coordinate_frame], window_name=window_title)
-
-    # Transform the source point cloud based on the local registration result
-    source_pcd.transform(trans_local.transformation)
-    window_title = f"Local Registration: Source: {source_temp}, Target: {target_down}"
-    o3d.visualization.draw_geometries([source_down, target_down, coordinate_frame], window_name=window_title)
-
-    # Save the transformed point cloud (registered result) for the next iteration
-    registered_file_name = f"registered_{i}.ply"
-    registered_file_path = os.path.join(output_folder, registered_file_name)
-    o3d.io.write_point_cloud(registered_file_path, source_pcd)
-    print(f"Registered file saved: {registered_file_path}")
-
-    # Set the registered point cloud as the new target for the next iteration
-    target_pcd += source_pcd
-
-print("Registration process completed for all scans.")
+print(f"Transformed scans saved in: {transformed_folder_path}")

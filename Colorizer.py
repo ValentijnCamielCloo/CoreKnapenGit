@@ -25,6 +25,7 @@ for ply_file in ply_files:
     # Load the point cloud
     point_cloud = o3d.io.read_point_cloud(ply_file)
     print(f"Processing: {ply_file}")
+    o3d.visualization.draw_geometries([point_cloud], window_name="Colored Point Cloud Visualization")
 
     # Get the colors from the point cloud
     colors = np.asarray(point_cloud.colors)
@@ -48,6 +49,7 @@ for ply_file in ply_files:
     # Filter out white colors
     non_white_mask = ~np.all(colors_scaled > 0.95, axis=1)
     non_white_colors = colors_scaled[non_white_mask]
+    o3d.visualization.draw_geometries([point_cloud], window_name="Colored Point Cloud Visualization")
 
     # Store red channel averages
     red_channel_values = []
