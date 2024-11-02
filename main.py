@@ -1,76 +1,67 @@
-from constants import FILE_NAME_MESH_LIST
 from functions import *
 import constants as c
+from gif import gif
 
 def main():
     # Create an instance of the point cloud
-    pcd = PointCloud(file_name_pcd=c.FILE_NAME_PCD)
+    pcd = PointCloud()
+    pcd.load_pcd(scan_dir=c.SCAN_DIR)
+    # pcd.visualize(title='scans', save_as_png=True)
+    gif('scans', title='Scan')
 
-    # Load the point cloud
-    pcd.load_pcd()
-    # pcd.visualize()
+    gif('colorized', title='Colorized scan')
 
-    # Downsample the point cloudq
+    # # # Correct the colors in the point clouds
+    # # pcd.colorize()
+    # # pcd.visualize(title='Colorized pcd', save_as_png=True)
+    #
+    # Create an instance of the point cloud
+    # pcd = PointCloud()
+    pcd.load_pcd(scan_dir=c.COLORIZED_DIR)
+    # pcd.visualize(title='Colorized loaded pcd', save_as_png=True)
+
+    # Translate and orientate the point cloud to the same place as the model
+    pcd.translate_orientate()
+    pcd.visualize(title='Translated and orientated pcd', save_as_png=True)
+
+    # Remove ground (black points)
+    pcd.filter_colors(filter_color=c.FILTER_COLOR, color_threshold=c.COLOR_THRESHOLD)
+    pcd.visualize(title='Filtered on colors', save_as_png=True)
+
+    # Registration of the scans to create one point cloud
+    pcd.registration()
+    pcd.visualize(title='Registered', save_as_png=True)
+
+    # Downsample and filter point cloud
     pcd.voxel_downsample(voxel_size=c.VOXEL_SIZE)
-    pcd.estimate_normals(orientate_camera=True)
+    pcd.visualize(title='Downsampled', save_as_png=True, rotate=True)
 
-    # Cluster point cloud based on normals
-    pcd.cluster_kmeans_normals()
-    pcd.visualize()
+    # Cluster the four sides
+    pcd.estimate_normals(orientate_not_middle=True, visualize_normals=False)
+    pcd.cluster_kmeans_normals(show_elbow=True)
+    pcd.visualize(title='K-means clustered', save_as_png=True, original_colors=False, rotate=True)
 
-    # Remove outliers from the clusters
-    pcd.remove_outliers_radius(nb_points=c.NB_POINTS, radius=c.RADIUS)
-    pcd.visualize()
+    # Cluster separate clusters to filter out outliers
+    pcd.cluster_kmeans_normals(biggest_cluster=True)
+    pcd.visualize(title='K-means outlier removal', save_as_png=True, original_colors=False, rotate=True)
 
-    # Initialize the Mesh class with the directory and list of files
-    meshes = Mesh(file_dir_mesh=c.FILE_DIR_MESH, file_name_mesh_list=FILE_NAME_MESH_LIST)
+    # Translate the point cloud to origin
+    pcd.translate(dist_scanner_obj=c.DIST_SCANNER_OBJ,height_scanner=c.HEIGHT_SCANNER)
 
-    # Load the meshes
+    # Create an instance of the Mesh
+    meshes = Mesh()
     meshes.load_meshes()
-    meshes.visualize(title='Mesh')
 
-    # Rotate the point cloud based on normal
-    pcd.orientate(meshes.meshes)
-    # #
-    # Check if the orientation is correct
-    # compare = ComparePCDMesh(pcd.pcd, meshes.meshes)
-    # compare.visualize(title='Check orientation point cloud')
-    #
-    # # Register the point clouds to one point cloud
-    # # pcd.registration(source_pcd=c.SOURCE_PCD)
-    # # pcd.visualize()
-    #
-    # # Cluster dbscan
-    # pcd.cluster_dbscan(eps=c.EPS, min_samples=c.MIN_SAMPLES)
-    # pcd.visualize()
-    #
-    # # Cluster k means the planes
-    # pcd.cluster_kmeans_normals()
-    # pcd.visualize()
-    #
-    # Filter the total point cloud
-    # pcd.estimate_normals()
-    # pcd.remove_outliers_radius(nb_points=c.NB_POINTS,radius=c.RADIUS)
-    # pcd.remove_outliers_normal(radius=c.RADIUS, threshold_angle=c.THRESHOLD_ANGLE, max_nn=c.MAX_NN)
-    # pcd.visualize()
-
-    # # Cluster point cloud based on normals
-    # # pcd.cluster_kmeans_normals()
-    # # pcd.visualize()
-    # #
-    # Translate point cloud to the origin (0,0)
-    pcd.translate()
-    # #
-    # # Check if the normals are pointing to the outside
-    # meshes.visualize_normals()
-    #
-    # Initialize the ComparePCDMesh class
+    # Create an instance for comparing mesh and pcd
     compare = ComparePCDMesh(pcd.pcd, meshes.meshes)
-    compare.visualize(title='Check pcd and mesh')
+    compare.visualize(title='Check translated pcd', save_as_png=True, original_colors=False, rotate=True)
+
     compare.check_bricks(points_per_brick=c.POINTS_PER_BRICK)
-    compare.visualize_result(filename_vis=c.FILENAME_VIS)
-    #
+    compare.visualize_result(filename_vis=c.FILENAME_VIS, save_as_png=True, rotate=True)
+
+    # Write results to a csv
     compare.write_results()
+
 
 
 if __name__ == '__main__':
