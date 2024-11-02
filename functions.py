@@ -244,7 +244,7 @@ class PointCloud:
             pc = o3d.io.read_point_cloud(str(file_path))
             self.pcd.append(pc)
 
-    def visualize(self, title=None, save_as_png=False, original_colors=True):
+    def visualize(self, title=None, save_as_png=False, original_colors=True, rotate=False):
         """
         Visualize the current point clouds and optionally save the visualization as a PNG file.
 
@@ -255,6 +255,9 @@ class PointCloud:
         if self.pcd:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
+
+            # if first_frame:
+            #     self.pcd = [self.pcd[1]]
 
             plotter = pv.Plotter()
 
@@ -277,7 +280,11 @@ class PointCloud:
             if title:
                 plotter.add_title(title, font_size=12)
 
+            plotter.zoom_camera(1.5)
+
             plotter.show(auto_close=False)
+
+
 
             if save_as_png:
                 filename = title.replace(" ", "_") + ".png"
@@ -285,19 +292,20 @@ class PointCloud:
                 plotter.screenshot(save_path)
                 print(f"Visualization saved as {save_path}")
 
-            # rotation_speed = 1
-            # display_time = 0.01
-            # # Rotate 360 degrees
-            # for _ in range(0, 360, rotation_speed):
-            #     plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
-            #     plotter.render()
-            #     time.sleep(display_time)
-            #
-            # # Add a one-second delay before closing
-            # time.sleep(1)
-            #
-            # # Close the window after rotation
-            # plotter.close()
+            if rotate:
+                rotation_speed = 1
+                display_time = 0.01
+                # Rotate 360 degrees
+                for _ in range(0, 360, rotation_speed):
+                    plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                    plotter.render()
+                    time.sleep(display_time)
+
+                # Add a one-second delay before closing
+                time.sleep(1)
+
+            # Close the window after rotation
+            plotter.close()
 
         else:
             print("! No point cloud data to visualize.")
@@ -799,6 +807,7 @@ class PointCloud:
 
             # Initialize cumulative point cloud with the first scan
             cumulative_cloud = self.pcd[0]
+            elevation_cloud = self.pcd[0]
 
             # Get all .ply files in the directory
             ply_files = glob.glob(os.path.join('scans', "*.ply"))
@@ -897,6 +906,8 @@ class PointCloud:
                     csv_writer.writerow([source_name, cumulative_name, translation[0], translation[1], translation[2],
                                          *rotation_degrees])
 
+                    # if i %2 == 0:     # Only add elevations, even scans
+                    #     elevation_cloud = elevation_cloud + source
                     # Update cumulative_cloud and cumulative_name with the new registered source
                     cumulative_cloud = combined_cloud
                     # cumulative_name = f"Registered_{i}.ply"
@@ -1250,7 +1261,7 @@ class Mesh:
 
         return self.meshes
 
-    def visualize(self, title=None, save_as_png=False, show_normals=False):
+    def visualize(self, title=None, save_as_png=False, show_normals=False, rotate=False):
         """
         Visualize the current meshes and optionally save the visualization as a PNG file.
 
@@ -1294,13 +1305,17 @@ class Mesh:
                 plotter.screenshot(save_path)
                 print(f"Mesh visualization saved as {save_path}")
 
-            rotation_speed = 1
-            display_time = 0.01
-            # Rotate 360 degrees
-            for _ in range(0, 360, rotation_speed):
-                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
-                plotter.render()
-                time.sleep(display_time)
+            if rotate:
+                rotation_speed = 1
+                display_time = 0.01
+                # Rotate 360 degrees
+                for _ in range(0, 360, rotation_speed):
+                    plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                    plotter.render()
+                    time.sleep(display_time)
+
+                # Add a one-second delay before closing
+                time.sleep(1)
 
             # Close the window after rotation
             plotter.close()
@@ -1556,7 +1571,7 @@ class ComparePCDMesh:
         else:
             print('! There is no point cloud for calculating the results')
 
-    def visualize(self, title=None, save_as_png=False, original_colors=True):
+    def visualize(self, title=None, save_as_png=False, original_colors=True, rotate=False):
         """
         Visualize the current meshes and point clouds, and optionally save the visualization as a PNG file.
 
@@ -1607,16 +1622,17 @@ class ComparePCDMesh:
                 plotter.screenshot(save_path)
                 print(f"Point cloud and mesh visualization saved as {save_path}")
 
-            rotation_speed = 1
-            display_time = 0.01
-            # Rotate 360 degrees
-            for _ in range(0, 360, rotation_speed):
-                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
-                plotter.render()
-                time.sleep(display_time)
+            if rotate:
+                rotation_speed = 1
+                display_time = 0.01
+                # Rotate 360 degrees
+                for _ in range(0, 360, rotation_speed):
+                    plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                    plotter.render()
+                    time.sleep(display_time)
 
-            # Add a one-second delay before closing
-            time.sleep(1)
+                # Add a one-second delay before closing
+                time.sleep(1)
 
             # Close the window after rotation
             plotter.close()
@@ -1624,7 +1640,7 @@ class ComparePCDMesh:
         else:
             print("! No point clouds or meshes loaded to visualize.")
 
-    def visualize_result(self, filename_vis, title='Results', save_as_png=True):
+    def visualize_result(self, filename_vis, title='Results', save_as_png=True, rotate=False):
         """
         Visualize the results and optionally save the visualization as a PNG file.
         Add information to the image on the progress of the total wall.
@@ -1660,8 +1676,8 @@ class ComparePCDMesh:
             # Create a single multiline string for the text to add to the visualization
             multi_line_text = (
                 f"Progress = {progress} %\n"
-                f"- built = {sum(n_bricks_total)}\n"
-                f"- to be built = {sum(n_not_built_bricks_total)}"  # Adjust this based on your logic
+                f"- built = {sum(n_bricks_total)} bricks\n"
+                f"- to be built = {sum(n_not_built_bricks_total)} bricks"  # Adjust this based on your logic
             )
             plotter.add_text(multi_line_text, font_size=10)
 
@@ -1678,16 +1694,17 @@ class ComparePCDMesh:
                 plotter.screenshot(save_path)
                 print(f"Results saved as {save_path}")
 
-            rotation_speed = 1
-            display_time = 0.03
-            # Rotate 360 degrees
-            for _ in range(0, 360, rotation_speed):
-                plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
-                plotter.render()
-                time.sleep(display_time)
+            if rotate:
+                rotation_speed = 1
+                display_time = 0.03
+                # Rotate 360 degrees
+                for _ in range(0, 360, rotation_speed):
+                    plotter.camera.azimuth += rotation_speed  # Increment the azimuth angle
+                    plotter.render()
+                    time.sleep(display_time)
 
-            # Add a one-second delay before closing
-            time.sleep(1)
+                # Add a one-second delay before closing
+                time.sleep(1)
 
             # Close the window after rotation
             plotter.close()

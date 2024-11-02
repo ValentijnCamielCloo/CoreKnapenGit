@@ -5,7 +5,7 @@ import pyvista as pv
 import open3d as o3d
 import cv2
 
-def gif(scan_dir):
+def gif(scan_dir, title):
     # Define the output directory for images and create it if it doesn't exist
     output_dir = 'gif_test'
     os.makedirs(output_dir, exist_ok=True)
@@ -35,7 +35,7 @@ def gif(scan_dir):
         else:
             plotter.add_points(point_cloud)  # Add points without color if not available
 
-        plotter.add_title(f'{scan_dir} {i+1}', font_size=12)
+        plotter.add_title(f'{title} {i+1}', font_size=12)
 
         # Set the camera position slightly above the origin for this frame
         plotter.camera.position = (0, 0, 0.03)  # Adjusted position to be slightly higher (1 unit above the origin)
@@ -44,6 +44,8 @@ def gif(scan_dir):
 
         # Update the plotter to ensure everything is set correctly
         plotter.reset_camera()
+
+        plotter.zoom_camera(1.3)
 
         # Save the current visualization as an image in the output directory
         image_path = os.path.join(output_dir, f"{scan_dir}_{i}.png")
