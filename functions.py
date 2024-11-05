@@ -121,9 +121,8 @@ class PointCloud:
         inside the 'ProgressPilot' main directory.
 
         """
-        # self.file_path = None
         self.save_counter = 1
-        self.pcd = None
+        self.pcd = []
 
         # Create the main 'ProgressPilot' directory if it doesn't exist
         main_dir = "ProgressPilot"
@@ -159,16 +158,15 @@ class PointCloud:
             os.makedirs(self.output_dir)
             logging.info(f"Output directory created: {self.output_dir}")
 
-    def load_pcd(self, scan_dir):
+    def load_pcd(self, ply_dir):
         """
         Load the point cloud from the .ply file.
+
         """
-        scan_dir = scan_dir
-        self.pcd = []
-        scan_files = sorted([f for f in os.listdir(scan_dir) if f.endswith('.ply')])
+        ply_files = sorted([f for f in os.listdir(ply_dir) if f.endswith('.ply')])
         # logging.info(f"Loading point cloud from {self.file_path}")
-        for scan in scan_files:
-            file_path = os.path.join(scan_dir, scan)
+        for scan in ply_files:
+            file_path = os.path.join(ply_dir, scan)
             pc = o3d.io.read_point_cloud(str(file_path))
             self.pcd.append(pc)
 
@@ -178,14 +176,13 @@ class PointCloud:
 
         Parameters:
         - title (str): title of the visualization, and filename when save_as_png=True (default=None)
-        - save_as_png (boolean): Optional to save as PNG file.
+        - save_as_png (boolean): Optional to save as PNG file (default=False).
+        - original_colors (boolean): If True, the original colors are visualized if available. Otherwise every point cloud is visualised with a uniform color (default=True).
+        - rotate (boolean): If True, the point cloud rotates during the visualisation (default=False).
         """
         if self.pcd:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
-
-            # if first_frame:
-            #     self.pcd = [self.pcd[1]]
 
             plotter = pv.Plotter()
 
@@ -211,8 +208,6 @@ class PointCloud:
             plotter.zoom_camera(1.5)
 
             plotter.show(auto_close=False)
-
-
 
             if save_as_png:
                 filename = title.replace(" ", "_") + ".png"
@@ -340,6 +335,7 @@ class PointCloud:
                         return (0, 0, 255)  # Assign blue
 
                 # Apply the appropriate coloring function based on the scan number
+                # Scans_1: [1,2,3,5], scans_2: [3,5]
                 if int(scan_name.split("_")[1]) in [1, 2, 3, 5]:
                     assign_color_based_on_red = assign_color_based_on_red_switched
                 else:
@@ -386,7 +382,7 @@ class PointCloud:
                 # Save the point cloud as a .ply file using Open3D
                 o3d.io.write_point_cloud(file_path_in_parent, pc)
 
-                # self._save_ply('colorized')
+                # self._save_ply('colorized_1')
 
         else:
             print('! No point clouds to colorize')
@@ -660,64 +656,6 @@ class PointCloud:
             self.pcd = filtered
             self._save_ply('filtered_colors')
 
-    def initial_alignment(self):
-        """
-        Rotate and translate the point clouds to align them in the coordinate system.
-
-        """
-        # Find the CSV file with format {ddmmyyyy}_path_coordinates.csv
-        csv_coordinates = None
-        for file in os.listdir('robot'):
-            if file.endswith('_path_coordinates.csv'):
-                csv_coordinates = file
-
-        # Ensure a CSV file was found
-        if csv_coordinates is None:
-            print("! No path_coordinates file found.")
-            return []
-
-        # Load the csv file to get the coordinates of the robot path
-        file_path = os.path.join('robot', csv_coordinates)
-        path_coordinates = pd.read_csv(file_path)
-
-        # Initialize scan list and other parameters
-        scans_folder_path = 'scans'
-        scan_files = sorted([f for f in os.listdir(scans_folder_path) if f.endswith('.ply')])
-
-        # Initialize geometries list to visualize all scans in one go
-        loaded_scan_files = []
-        init_aligned_pcd = []
-        coordinate_frames = []
-
-        # Loop through each scan, set its position, and apply rotation
-        for i, scan_file in enumerate(scan_files):
-            self.load_pcd(scan_file)
-            loaded_scan_files.append(self.pcd)
-
-            # Get the coordinates and rotation for each scan from CSV
-            x, y, z = path_coordinates.loc[i, ['x', 'y', 'z']]
-            # base_rotation = path_coordinates.loc[i, 'rotation']
-
-            # Translate to the calculated coordinates
-            self.pcd.translate((x, y, z))
-
-            # Apply an additional rotation for each scan based on the step
-            additional_rotation_angle = np.pi / 4 * i  # 45 degrees per scan
-            r_additional = o3d.geometry.get_rotation_matrix_from_axis_angle([0, 0, additional_rotation_angle])
-            self.pcd.rotate(r_additional, center=(x, y, z))
-
-            # Visualize coordinate frame for each scan
-            coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(size=0.1)
-            coord_frame.translate((x, y, z))
-            coord_frame.rotate(r_additional, center=(x, y, z))  # Apply additional rotation to coordinate frame as well
-            coordinate_frames.append(coord_frame)
-            init_aligned_pcd.append(self.pcd)
-
-        self._save_ply('scan', point_cloud=loaded_scan_files)
-        # o3d.visualization.draw_geometries((init_aligned_pcd + coordinate_frames), window_name="Transformed Scans Visualization")
-        self.pcd = init_aligned_pcd
-        self._save_ply('transformed_scans')
-
     def registration(self):
         """
         Register different point clouds consecutively to create one 3D object.
@@ -971,63 +909,7 @@ class PointCloud:
         else:
             print("! No point cloud data for clustering.")
 
-    def orientate(self, meshes):
-        """
-        OVERBODIG GEWORDEN!!
-        Orientate the point cloud in such a way that the orientation is the same as the model.
-        This is the first step of aligning the point cloud and the model.
-
-        Parameters:
-        - meshes: model mesh, which is the target for orientation.
-        """
-        if self.pcd:
-            print('\nRotate the point cloud to the same orientation as the model...')
-
-            # Compute mean normal from one point cloud cluster
-            if type(self.pcd) is list:
-                pc = self.pcd[0]
-            else:
-                pc = self.pcd
-
-            if not pc.has_normals():
-                print('Computing normals...')
-                self.estimate_normals(orientate_camera=True)
-
-            normals = np.asarray(pc.normals)
-            normal_source = np.mean(normals, axis=0)
-            print(f'Normal source: {normal_source}')
-
-            # Compute mean normal from one mesh plane
-            if type(meshes) is list:
-                mesh = meshes[0]
-            else:
-                mesh = meshes
-
-            normals_mesh = mesh.point_data['Normals']
-            normal_target = np.mean(normals_mesh, axis=0)
-            print(f'Normal target: {normal_target}')
-
-            rot_matrix = compute_rotation_matrix(normal_source, normal_target)
-            print(f"Rotation Matrix:\n {rot_matrix}")
-
-            # Perform rotation on the points and normals of all clusters
-            points = np.asarray(pc.points)
-            normals = np.asarray(pc.normals)
-
-            rotated_points = points @ rot_matrix.T
-            rotated_normals = normals @ rot_matrix.T
-
-            # Update the point cloud with rotated points and normals
-            pc.points = o3d.utility.Vector3dVector(rotated_points)
-            pc.normals = o3d.utility.Vector3dVector(rotated_normals)
-
-            self.pcd = pc
-            self._save_ply('rotated')
-
-        else:
-            print("! No point cloud data for rotating.")
-
-    def translate(self, dist_scanner_obj, height_scanner):
+    def translate_to_origin(self, dist_scanner_obj, height_scanner):
         # Find the CSV file with format {ddmmyyyy}_path_coordinates.csv
         csv_coordinates = None
         for file in os.listdir('robot'):
@@ -1150,7 +1032,7 @@ class Mesh:
         Load multiple meshes based on an Excel file that specifies which meshes to load, using the latest-dated Excel file.
 
         """
-        # Find the latest Excel file with format {ddmmyyyy}_facade_order.csv
+        # Find the latest Excel file with format {yyyymmdd}_facade_order.csv
         latest_excel_file = None
         for file in os.listdir('model'):
             if file.endswith('_facade_order.csv'):
@@ -1251,7 +1133,7 @@ class Mesh:
         else:
             print("! No meshes loaded to visualize.")
 
-    def _save_meshes(self, file_name="mesh"):
+    def _save_meshes(self, filename="mesh"):
         """
         Save all loaded meshes to the latest output directory with a given filename prefix.
 
@@ -1261,14 +1143,14 @@ class Mesh:
                 self.meshes = [self.meshes]
 
             if len(self.meshes) > 1:
-                folder_name = file_name
+                folder_name = filename
                 output_dir = os.path.join(self.output_dir, folder_name)
                 os.makedirs(output_dir, exist_ok=True)
             else:
                 output_dir = self.output_dir
 
             for i, mesh in enumerate(self.meshes):
-                save_path = os.path.join(output_dir, f"{file_name}_{i}.ply")
+                save_path = os.path.join(output_dir, f"{filename}_{i}.ply")
                 mesh.save(save_path)
                 print(f"Saved: {save_path}")
 
@@ -1477,8 +1359,8 @@ class ComparePCDMesh:
                 if self.not_built[i]:
                     n_not_built_bricks = len(self.not_built[i])
                 else:
-                    surface = self.surface[i]
-                    n_not_built_bricks = surface.n_cells
+                    # surface = self.surface[i]
+                    n_not_built_bricks = 0
                 print(f'- Number of bricks not built: {n_not_built_bricks}')
                 n_not_built_bricks_total.append(n_not_built_bricks)
 

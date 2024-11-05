@@ -4,20 +4,20 @@ from gif import gif
 
 def main():
     # Create an instance of the point cloud
-    pcd = PointCloud()
-    pcd.load_pcd(scan_dir=c.SCAN_DIR)
-    # pcd.visualize(title='scans', save_as_png=True)
-    gif('scans', title='Scan')
-
-    gif('colorized', title='Colorized scan')
-
-    # # # Correct the colors in the point clouds
-    # # pcd.colorize()
-    # # pcd.visualize(title='Colorized pcd', save_as_png=True)
-    #
-    # Create an instance of the point cloud
     # pcd = PointCloud()
-    pcd.load_pcd(scan_dir=c.COLORIZED_DIR)
+    # pcd.load_pcd(ply_dir=c.SCAN_DIR)
+    # pcd.visualize(title='scans', save_as_png=True)
+    # gif('scans', title='Scan')
+
+    # gif('colorized_1', title='Colorized scan')
+
+    # Correct the colors in the point clouds
+    # pcd.colorize()
+    # pcd.visualize(title='Colorized pcd', save_as_png=True)
+
+    # Create an instance of the point cloud
+    pcd = PointCloud()
+    pcd.load_pcd(ply_dir=c.COLORIZED_DIR)
     # pcd.visualize(title='Colorized loaded pcd', save_as_png=True)
 
     # Translate and orientate the point cloud to the same place as the model
@@ -46,7 +46,7 @@ def main():
     pcd.visualize(title='K-means outlier removal', save_as_png=True, original_colors=False, rotate=True)
 
     # Translate the point cloud to origin
-    pcd.translate(dist_scanner_obj=c.DIST_SCANNER_OBJ,height_scanner=c.HEIGHT_SCANNER)
+    pcd.translate_to_origin(dist_scanner_obj=c.DIST_SCANNER_OBJ,height_scanner=c.HEIGHT_SCANNER)
 
     # Create an instance of the Mesh
     meshes = Mesh()
