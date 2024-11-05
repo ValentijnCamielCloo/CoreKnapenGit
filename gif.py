@@ -7,7 +7,7 @@ import cv2
 
 def gif(scan_dir, title):
     # Define the output directory for images and create it if it doesn't exist
-    output_dir = 'gif_test'
+    output_dir = 'gif'
     os.makedirs(output_dir, exist_ok=True)
 
     # List all .ply files in the scans directory
