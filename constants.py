@@ -30,4 +30,4 @@ MIN_POINTS = 50
 
 # Comparing Mesh and Point Cloud
 POINTS_PER_BRICK = 15
-FILENAME_VIS = '26102024_vis_model.ply'
+FILENAME_VIS = '20241030_vis_model.ply'

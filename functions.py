@@ -7,9 +7,7 @@ from sklearn.cluster import KMeans, DBSCAN
 from kneed import KneeLocator
 from datetime import datetime
 import pyvista as pv
-import random
 import csv
-import constants as c
 import pandas as pd
 import logging
 import time
@@ -231,7 +229,7 @@ class PointCloud:
             plotter.close()
 
         else:
-            print("! No point cloud data to visualize.")
+            logging.error("! No point cloud data to visualize.")
 
     def colorize(self):
         if self.pcd:
