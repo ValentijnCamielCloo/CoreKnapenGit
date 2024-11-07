@@ -27,3 +27,6 @@ This Python script controls a Mirte robot for line-following and wall scanning t
    ```bash
    git clone https://github.com/yourusername/mirte-robot-control.git
    cd mirte-robot-control
+
+
+![RoboticControl](img/Mirte_workflow.jpg)
