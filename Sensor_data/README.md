@@ -4,6 +4,8 @@
 
 The `sensor.py` file is responsible for acquiring raw point cloud data from a 3D sensor, such as an Intel RealSense camera. It handles sensor initialization, data collection, and saving of the data in the `.ply` format for further processing. The sensor can capture 3D point clouds from the environment, which are crucial for creating accurate models of the scanned area. 
 
+![Workflow Sensor](img/Sensor.png)
+
 ### Features:
 - **Sensor Initialization**: Initializes the 3D sensor (RealSense or other).
 - **Data Capture**: Captures point cloud data from the sensor.
