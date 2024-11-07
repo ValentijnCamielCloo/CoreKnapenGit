@@ -55,3 +55,9 @@ To set up your environment, first install the required dependencies using the `r
 
 ```bash
 pip install -r requirements.txt
+```
+
+## Constants
+
+In this file all pre-defined constants are listed such that when running the code, These constants should be adjusted to the appropriate conditions for each scan 
+
