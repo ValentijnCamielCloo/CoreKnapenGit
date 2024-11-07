@@ -18,7 +18,9 @@ This project is organized into four main tasks, each contributing to the final d
    - Acquisition of sensor data.
    - Control of the robotic system to ensure data is captured efficiently.
 
-### 2. **Sensor Data Acquisition**
+Note: This code should be run individually within the MIRTE Control
+
+### 2. **Sensor Data Acquisition** Dit gaat allemaal over Sensor.py
    Sensor data acquisition deals with gathering and loading the raw point cloud data from the scan locations. This involves loading the `.ply` files from a specified directory and visualizing the data for initial inspection. The point clouds are then processed to improve quality and consistency before further analysis.
 
    **Functions/Steps:**
@@ -26,24 +28,27 @@ This project is organized into four main tasks, each contributing to the final d
    - Visualization of loaded point clouds with `pcd.visualize()`.
    - Correction of colors to ensure consistency using `pcd.colorize()`.
 
-### 3. **Data Modeling**
-   In this task, the point cloud data is processed, transformed, and modeled to create a unified representation of the scanned environment. This includes applying geometric transformations, removing unwanted elements, and downsampling the data for more efficient processing.
+Note: This code should be run individually with a RealSense device connected 
 
-   **Functions/Steps:**
+### 3. **Data Modeling** Dit gaat allemaal over Functions.py dit staat in pointcloud processing
+   In this task, the point cloud data is processed, transformed, and modeled to create a unified representation of the scanned environment. This includes applying geometric transformations, removing unwanted elements, and downsampling the data for more efficient processing. The visual output is used to check the alignment, registration, and quality of the processed data. Additionally, the results are written to CSV files for further analysis and reporting.
+      **Functions/Steps:**
+#### 3.1  Pointcloud processing
    - **Translation & Orientation:** Aligning the point cloud with a reference model using `pcd.translate_orientate()`.
    - **Ground Removal:** Filtering out unwanted points (e.g., ground) based on color thresholds using `pcd.filter_colors()`.
    - **Registration:** Merging multiple scans to create a single unified point cloud using `pcd.registration()`.
    - **Downsampling:** Reducing the number of points using voxel downsampling (`pcd.voxel_downsample()`).
    - **Clustering:** Grouping similar points together using K-means clustering (`pcd.cluster_kmeans_normals()`), removing outliers, and preparing for the final model.
-
-### 4. **Result Visualization**
-   Once the data has been processed and cleaned, this task focuses on visualizing the results and comparing them to reference meshes. The visual output is used to check the alignment, registration, and quality of the processed data. Additionally, the results are written to CSV files for further analysis and reporting.
-
-   **Functions/Steps:**
-   - Visualizing each step of the process (e.g., translation, registration, clustering).
+#### 3.2 Comparing calculated results
    - Comparing the processed point cloud to a reference mesh using `ComparePCDMesh()`.
    - Writing final results to CSV files for documentation and analysis using `compare.write_results()`.
 
+
+### 4. **Result Visualization** Hier komt mark zijn zooi met dashboard 
+   Once the data has been processed and cleaned, this task focuses on visualizing the results with graphs.  
+
+   
+Note: This could should be run indivudally due to limitations with importing csv files  
 ---
 
 ## Installation 
