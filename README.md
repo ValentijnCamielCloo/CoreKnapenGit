@@ -64,3 +64,10 @@ In this file all pre-defined constants are listed such that when running the cod
 ## Logger
 
 In this file for each iterations of pointcloud mesh registration, the results are written such that in one overview we're able to see if a requested folder is created and when
+
+
+## The Team
+
+Our team consist of 4 dedicated students from left to right: Mark, Joost, Valentijn & Sarah. 
+
+![TEAM](img/TEAM.jpg)
