@@ -18,4 +18,8 @@ The `sensor.py` file is responsible for acquiring raw point cloud data from a 3D
 - **`save_point_cloud(filename)`**: Saves the captured point cloud data to the specified file.
 - **`visualize_point_cloud()`**: (Optional) Visualizes the point cloud in real-time.
 
+ ### Test files:
+In this folder there is also a set of Filtered test .ply files that were used in the algorithm 
+
+
 ![Workflow Sensor](img/Sensor_Workflow.jpg)
