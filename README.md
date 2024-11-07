@@ -1,6 +1,6 @@
-# Project Title
-
-Welcome to our project repository! This README provides a complete guide to the workflow, installation, and contents of the repository.
+# Progress Pilot
+## "3D data acquisition and autonomous construction progress tracking"]
+Welcome to our project repository! This README provides a complete guide to the workflow, installation, and contents of the repository. 
 
 ![Results](img/Results.png)
 
