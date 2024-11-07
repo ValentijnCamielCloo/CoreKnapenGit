@@ -63,13 +63,13 @@ elif selected_visualization == "Robot Information":
             # Storage Data
             if "StorageData" in sheets:
                 st.subheader("Robot Storage Capacity")
-                storage_file_path = r"C:\Users\markd\Documenten\Mark de Kanter\TU Delft\Jaar 2\CORE\Visualisations\robot_data.xlsx"
                 try:
-                    fig_storage = plot_storage_data(storage_file_path)
+                    data_storage = pd.read_excel(xls, sheet_name="StorageData")
+                    fig_storage = plot_storage_data(data_storage)
                     st.pyplot(fig_storage, use_container_width=True)
                     visualized_sheets.add("StorageData")
                 except Exception as e:
-                    st.error(f"Error visualizing storage data: {e}")
+                    st.error(f"Error visualizing storage data: {e}")
 
             # Robot Speed
             if "Speed robot" in sheets:

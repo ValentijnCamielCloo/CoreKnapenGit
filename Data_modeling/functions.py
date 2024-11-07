@@ -123,7 +123,7 @@ class PointCloud:
         self.pcd = []
 
         # Create the main 'ProgressPilot' directory if it doesn't exist
-        main_dir = "../ProgressPilot"
+        main_dir = "ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
             logging.info(f"Main directory created: {main_dir}")
@@ -1009,7 +1009,7 @@ class Mesh:
         self.meshes = []
 
         # Find the latest created output directory inside 'ProgressPilot'
-        main_dir = "../ProgressPilot"
+        main_dir = "ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
             print(f"Main directory created: {main_dir}")
@@ -1171,7 +1171,7 @@ class ComparePCDMesh:
         self.surface = None
 
         # Find the latest created output directory inside 'ProgressPilot'
-        main_dir = "../ProgressPilot"
+        main_dir = "ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
             print(f"Main directory created: {main_dir}")

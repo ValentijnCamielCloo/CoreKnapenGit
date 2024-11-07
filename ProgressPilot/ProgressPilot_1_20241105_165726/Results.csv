@@ -1,6 +1,0 @@
-wall,scan date,scan time,facade,bricks built,bricks to built,progress (%)
-0,2024-10-30,11:51:56,front,29,31,48.33
-1,2024-10-30,11:54:59,right,16,12,57.14
-2,2024-10-30,11:56:28,back,60,0,100.0
-3,2024-10-30,11:58:41,left,28,0,100.0
-total,,,,133,43,75.57
