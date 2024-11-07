@@ -12,4 +12,4 @@
    - Writing final results to CSV files for documentation and analysis using `compare.write_results()`.
 
 
-![Workflow Overview](img/maintask.png)
+![Workflow Overview](img/Data_Workflow.jpg)
