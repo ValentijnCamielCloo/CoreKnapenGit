@@ -1,19 +1,29 @@
-# ProgressPilot 
+# Project Title
 
-## Overview
-This repository contains code and resources for ["3D data acquisition and autonomous construction progress tracking"]. The repository is structured to streamline various tasks involved in 3D scanning, data processing, and visualization. 
+Welcome to our project repository! This README provides a complete guide to the workflow, installation, and contents of the repository.
+
+---
+
+![Workflow Overview](img/maintask.png)
+
+## Workflow Overview
+
+This project is organized into four main tasks, each contributing to the final data processing and result generation. The workflow handles scan data, data modeling, robotic analysis, and result visualization, as shown above.
+
+---
 
 ## Result Preview
+
 ![Result](img/result.png)
 
-The above image (`result.png`) shows the final result of the processing workflow. This result demonstrates [briefly describe what the result represents, e.g., "a registered point cloud showcasing the scan alignment and color-coded regions"].
+The image above is a sample result generated from the repository's processing pipeline. It provides a reference for the final output after executing the scripts.
 
-## Installation
-To get started, make sure to set up a Python environment and install the required dependencies:
+---
 
-### Python Environment Setup
+## Installation 
 
-The `requirements.txt` file lists all necessary libraries. To install these, run:
+To set up your environment, first install the required dependencies using the `requirements.txt` file:
 
 ```bash
 pip install -r requirements.txt
+
