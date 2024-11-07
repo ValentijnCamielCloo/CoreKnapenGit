@@ -61,3 +61,6 @@ pip install -r requirements.txt
 
 In this file all pre-defined constants are listed such that when running the code, These constants should be adjusted to the appropriate conditions for each scan 
 
+## Logger
+
+In this file for each iterations of pointcloud mesh registration, the results are written such that in one overview we're able to see if a requested folder is created and when
