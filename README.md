@@ -2,6 +2,10 @@
 
 Welcome to our project repository! This README provides a complete guide to the workflow, installation, and contents of the repository.
 
+![Result](img/result.png)
+
+The image above is a sample result generated from the repository's processing pipeline. It provides a reference for the final output after executing the scripts.
+
 ---
 
 ![Workflow Overview](img/maintask.png)
@@ -12,13 +16,6 @@ This project is organized into four main tasks, each contributing to the final d
 
 ---
 
-## Result Preview
-
-![Result](img/result.png)
-
-The image above is a sample result generated from the repository's processing pipeline. It provides a reference for the final output after executing the scripts.
-
----
 
 ## Installation 
 
