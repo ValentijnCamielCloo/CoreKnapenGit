@@ -40,11 +40,11 @@ Note: This code should be run individually with a RealSense device connected
 #### 3.2 Comparing with BIM model
 
 
-### 4. **Dashboard** Hier komt mark zijn zooi met dashboard 
+### 4. **Dashboard** 
    Once the data has been processed and cleaned, this task focuses on visualizing the results with graphs.  
 
    
-Note: This could should be run indivudally due to limitations with importing csv files
+Note: This could should be run indivudally due to limitations with importing csv files in hte local host
 
 
 ---
