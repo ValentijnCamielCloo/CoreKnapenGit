@@ -68,6 +68,18 @@ In this file for each iterations of pointcloud mesh registration, the results ar
 
 ## The Team
 
-Our team consist of 4 dedicated students from left to right: Mark, Joost, Valentijn & Sarah. 
+Our team consist of 4 dedicated Msc Building Technology students at TU Delft from left to right: Mark, Joost, Valentijn & Sarah. 
 
 ![TEAM](img/TEAM.jpg)
+
+##Special Thanks
+We would like to extend a special thanks to the following individuals and organizations for their valuable contributions to the development and success of this project:
+
+- Laurens van der Laan
+- Reza Sebzavari
+- Robohouse
+- Paux
+- Sarah's Mom
+- Mark's Aunt
+- David
+Thank you all for helping us bring this project to life!
