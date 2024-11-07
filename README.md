@@ -20,4 +20,3 @@ To set up your environment, first install the required dependencies using the `r
 
 ```bash
 pip install -r requirements.txt
-
