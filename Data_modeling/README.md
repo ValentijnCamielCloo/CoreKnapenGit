@@ -11,23 +11,6 @@ The point cloud processing step focuses on preparing the captured 3D data for fu
 - **Downsampling**: Reduces the number of points in the point cloud to make further processing more efficient. This is done through voxel downsampling with the method `pcd.voxel_downsample()`.
 - **Clustering**: Groups similar points together using K-means clustering (`pcd.cluster_kmeans_normals()`), which helps to identify patterns and remove outliers, making the final model more precise.
 
-### Example Workflow:
-
-# Translation and orientation of point cloud
-pcd.translate_orientate(reference_model)
-
-# Ground removal using color filtering
-pcd.filter_colors(color_thresholds)
-
-# Point cloud registration to create a unified model
-pcd.registration(other_scan)
-
-# Downsampling the point cloud to reduce data size
-pcd.voxel_downsample(voxel_size=0.02)
-
-# Clustering to group similar points
-pcd.cluster_kmeans_normals(k=5)
-
 ## 3.2 Comparing Calculated Results
 
 After processing the point cloud, it's essential to compare the results with a reference model or mesh. This step helps to evaluate the accuracy and consistency of the processed data.
