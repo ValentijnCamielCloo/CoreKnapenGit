@@ -72,7 +72,7 @@ Our team consist of 4 dedicated Msc Building Technology students at TU Delft fro
 
 ![TEAM](img/TEAM.jpg)
 
-##Special Thanks
+## Special Thanks
 We would like to extend a special thanks to the following individuals and organizations for their valuable contributions to the development and success of this project:
 
 - Laurens van der Laan
