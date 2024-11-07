@@ -29,8 +29,10 @@ After processing the point cloud, it's essential to compare the results with a r
    
 2. **Saving Results**:
    - The comparison results, including any misalignments or matching errors, are written to CSV files for further review.
+   - 
+![Workflow Overview](img/Results.png)
 
 This comparison allows for the assessment of the alignment between the processed point cloud and the reference mesh, helping to fine-tune the 3D model for accuracy.
 
-
+## Workflow
 ![Workflow Overview](img/Data_Workflow.jpg)
