@@ -1,2 +1,2 @@
 
-![Workflow Sensor](img/Sensor_workflow.jpg)
+![Workflow Sensor](img/Sensor_Workflow.jpg)
