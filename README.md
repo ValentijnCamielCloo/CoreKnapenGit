@@ -44,7 +44,9 @@ Note: This code should be run individually with a RealSense device connected
    Once the data has been processed and cleaned, this task focuses on visualizing the results with graphs.  
 
    
-Note: This could should be run indivudally due to limitations with importing csv files  MARK SCHRIJF HIER BIJ WAT ER NOU GEBEURD 
+Note: This could should be run indivudally due to limitations with importing csv files MARK SCHRIJF HIER BIJ WAT ER NOU GEBEURD 
+
+
 ---
 
 ## Installation 
