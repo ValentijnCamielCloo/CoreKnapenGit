@@ -82,4 +82,5 @@ We would like to extend a special thanks to the following individuals and organi
 - Sarah's Mom
 - Mark's Aunt
 - David
+
 Thank you all for helping us bring this project to life!
