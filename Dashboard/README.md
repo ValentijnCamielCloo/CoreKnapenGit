@@ -1,3 +1,3 @@
 ---
 
-![Dashboard](img/CORE 2024 Group 8 (4).jpg)
+![Dashboard](img/Dashboard_workflow.jpg)
