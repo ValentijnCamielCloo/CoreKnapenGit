@@ -16,7 +16,7 @@ import glob
 
 # Configure logging
 logging.basicConfig(
-    filename='CORE_comparison.log',  # Log file name
+    filename='CORE.log',  # Log file name
     level=logging.INFO,  # Set the logging level
     format='%(asctime)s - %(levelname)s - %(message)s'  # Log message format
 )
@@ -123,7 +123,7 @@ class PointCloud:
         self.pcd = []
 
         # Create the main 'ProgressPilot' directory if it doesn't exist
-        main_dir = "ProgressPilot"
+        main_dir = "../ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
             logging.info(f"Main directory created: {main_dir}")
@@ -237,11 +237,11 @@ class PointCloud:
                 self.pcd = [self.pcd]
 
             # Get all .ply files in the directory
-            ply_files = glob.glob(os.path.join('scans', "*.ply"))
+            ply_files = glob.glob(os.path.join('../Sensor_data', "*.ply"))
 
-            # Load the csv file to get the coordinates of the robot path
+            # Load the csv file to get the coordinates of the Robotic_control path
             csv_scan_scales = 'scancolor_scale.csv'
-            file_path = os.path.join('scans', csv_scan_scales)
+            file_path = os.path.join('../Sensor_data', csv_scan_scales)
             scan_scales = pd.read_csv(file_path)
             scale_values = {row['Scan']: float(row['Scale']) for index, row in scan_scales.iterrows()}  # Ensure scale is float
 
@@ -302,7 +302,7 @@ class PointCloud:
                     'Blue': [],
                 }
 
-                # Function to assign color based on red channel for scans [4, 6, 7, 8]
+                # Function to assign color based on red channel for Sensor_data [4, 6, 7, 8]
                 def assign_color_based_on_red_standard(red_value):
                     if ranges[0][0] <= red_value < ranges[0][1]:
                         color_hist_data['Red'].append(red_value)
@@ -317,7 +317,7 @@ class PointCloud:
                         color_hist_data['Blue'].append(red_value)
                         return (0, 0, 255)  # Assign blue
 
-                # Function to assign color with yellow and green switched for scans [2, 3, 5, 9]
+                # Function to assign color with yellow and green switched for Sensor_data [2, 3, 5, 9]
                 def assign_color_based_on_red_switched(red_value):
                     if ranges[0][0] <= red_value < ranges[0][1]:
                         color_hist_data['Red'].append(red_value)
@@ -392,7 +392,7 @@ class PointCloud:
 
             # Find the CSV file with format {yyyymmdd}_path_coordinates.csv
             csv_coordinates = None
-            for file in os.listdir('robot'):
+            for file in os.listdir('../Robotic_control'):
                 if file.endswith('_path_coordinates.csv'):
                     csv_coordinates = file
 
@@ -401,8 +401,8 @@ class PointCloud:
                 print("! No path_coordinates file found.")
                 return []
 
-            # Load the csv file to get the coordinates of the robot path
-            file_path = os.path.join('robot', csv_coordinates)
+            # Load the csv file to get the coordinates of the Robotic_control path
+            file_path = os.path.join('../Robotic_control', csv_coordinates)
             path_coordinates = pd.read_csv(file_path)
 
             translated_orientated = []
@@ -450,7 +450,7 @@ class PointCloud:
                 if orientate_not_middle:
                     # Find the CSV file with format {ddmmyyyy}_path_coordinates.csv
                     csv_coordinates = None
-                    for file in os.listdir('robot'):
+                    for file in os.listdir('../Robotic_control'):
                         if file.endswith('_path_coordinates.csv'):
                             csv_coordinates = file
 
@@ -460,7 +460,7 @@ class PointCloud:
                         return []
 
                     # Load the CSV file with coordinates
-                    file_path = os.path.join('robot', csv_coordinates)
+                    file_path = os.path.join('../Robotic_control', csv_coordinates)
                     path_coordinates = pd.read_csv(file_path)
 
                     x_middle = path_coordinates.iloc[0]['x']
@@ -674,7 +674,7 @@ class PointCloud:
             elevation_cloud = self.pcd[0]
 
             # Get all .ply files in the directory
-            ply_files = glob.glob(os.path.join('scans', "*.ply"))
+            ply_files = glob.glob(os.path.join('../Sensor_data', "*.ply"))
             cumulative_name = ply_files[0]
 
             # Export the initial cumulative cloud
@@ -770,7 +770,7 @@ class PointCloud:
                     csv_writer.writerow([source_name, cumulative_name, translation[0], translation[1], translation[2],
                                          *rotation_degrees])
 
-                    # if i %2 == 0:     # Only add elevations, even scans
+                    # if i %2 == 0:     # Only add elevations, even Sensor_data
                     #     elevation_cloud = elevation_cloud + source
                     # Update cumulative_cloud and cumulative_name with the new registered source
                     cumulative_cloud = combined_cloud
@@ -910,7 +910,7 @@ class PointCloud:
     def translate_to_origin(self, dist_scanner_obj, height_scanner):
         # Find the CSV file with format {ddmmyyyy}_path_coordinates.csv
         csv_coordinates = None
-        for file in os.listdir('robot'):
+        for file in os.listdir('../Robotic_control'):
             if file.endswith('_path_coordinates.csv'):
                 csv_coordinates = file
 
@@ -919,8 +919,8 @@ class PointCloud:
             print("! No path_coordinates file found.")
             return []
 
-        # Load the csv file to get the coordinates of the robot path
-        file_path = os.path.join('robot', csv_coordinates)
+        # Load the csv file to get the coordinates of the Robotic_control path
+        file_path = os.path.join('../Robotic_control', csv_coordinates)
         path_coordinates = pd.read_csv(file_path)
 
         # Get the coordinates and rotation for each scan from CSV
@@ -1009,7 +1009,7 @@ class Mesh:
         self.meshes = []
 
         # Find the latest created output directory inside 'ProgressPilot'
-        main_dir = "ProgressPilot"
+        main_dir = "../ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
             print(f"Main directory created: {main_dir}")
@@ -1171,7 +1171,7 @@ class ComparePCDMesh:
         self.surface = None
 
         # Find the latest created output directory inside 'ProgressPilot'
-        main_dir = "ProgressPilot"
+        main_dir = "../ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
             print(f"Main directory created: {main_dir}")
@@ -1542,7 +1542,7 @@ class ComparePCDMesh:
         # Find corresponding date and time of each scan
         date = []
         time = []
-        for file in os.listdir('scans'):
+        for file in os.listdir('../Sensor_data'):
             if file.endswith('_filtered.ply'):  # Check only for files ending with '_filtered.ply'
                 parts = file.split('_')
 
