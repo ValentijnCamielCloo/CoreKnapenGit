@@ -30,12 +30,14 @@ Note: This code should be run individually within the MIRTE Control
 
 Note: This code should be run individually with a RealSense device connected 
 
-### 3. **Pointcloud Processing** Dit gaat allemaal over Functions.py dit staat in pointcloud processing
-   In this task, the point cloud data is processed, transformed, and modeled to create a unified representation of the scanned environment. This includes applying geometric transformations, removing unwanted elements, and downsampling the data for more efficient processing. The visual output is used to check the alignment, registration, and quality of the processed data. Additionally, the results are written to CSV files for further analysis and reporting.
-      **Functions/Steps:**
-#### 3.1  Pointcloud processing
+### 3. **Data Modelling** Dit gaat allemaal over Functions.py dit staat in pointcloud processing
+   In this task, the point cloud data is processed, transformed, and modeled to create a unified representation of the scanned environment. This includes applying geometric transformations, removing unwanted elements, and downsampling the data for more efficient processing. The visual output is used to check the alignment, registration, and quality of the processed data. Additionally, the results are written to CSV files for further analysis and reporting. 
+   
+   Since this step is part of the main functionality of the code these steps are 
 
-#### 3.2 Comparing calculated results
+#### 3.1 Pointcloud processing
+
+#### 3.2 Comparing with BIM model
 
 
 ### 4. **Dashboard** Hier komt mark zijn zooi met dashboard 
