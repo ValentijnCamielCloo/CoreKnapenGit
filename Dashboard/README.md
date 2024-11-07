@@ -20,7 +20,7 @@ A mock-up has been created to reflect the potential exports of the robot. This d
 ![Dashboard](img/Dashboard_workflow.jpg)
 
 ### Visualisation planning data:
-![Dashboard](img/Planning dashboard.jpg)
+![Dashboard2](img/Planning dashboard.jpg)
 
 ### Visualisation robot data:
-![Dashboard](img/Robot dashboard.jpg)
+![Dashboard3](img/Robot dashboard.jpg)
