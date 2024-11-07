@@ -3,7 +3,7 @@
 This Python script controls a Mirte robot for line-following and wall scanning tasks. It includes emergency stop functionality, distance and time logging, and the ability to celebrate after completing a specified number of scans.
 
 
-![RoboticControl](img/Robotic Control.png)
+![RoboticControl](img/RoboticControl.png)
 
 ## Features
 
