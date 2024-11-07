@@ -19,17 +19,6 @@ After processing the point cloud, it's essential to compare the results with a r
 - **Comparing Processed Point Cloud to a Reference Mesh**: The processed point cloud is compared with a reference mesh to analyze the alignment and accuracy.
 - **Writing Final Results**: The comparison results, including any errors or discrepancies, are documented and saved to CSV files for future analysis.
 
-### Functions/Steps:
-- **`ComparePCDMesh()`**: Compares the processed point cloud to a reference mesh.
-- **`compare.write_results()`**: Saves the comparison results to a CSV file.
-
-### Example Usage:
-1. **Comparing Point Cloud to Reference Mesh**:
-   - The processed point cloud is compared to the reference mesh to check for discrepancies in alignment.
-   
-2. **Saving Results**:
-   - The comparison results, including any misalignments or matching errors, are written to CSV files for further review.
-   - 
 ![Results](img/Results.png)
 
 This comparison allows for the assessment of the alignment between the processed point cloud and the reference mesh, helping to fine-tune the 3D model for accuracy.
