@@ -3,6 +3,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def plot_robot_speed(df):
+    '''
+    This function creates a plot displaying the robot's speed over time. It extracts the 'Time' and 'Speed' columns 
+    from the provided DataFrame and uses them to plot the speed as a line with markers. Additionally, it displays bars 
+    below each point to indicate the speed at each time interval.
+
+    Parameters:
+    df (pd.DataFrame): A Pandas DataFrame containing at least 'Time' and 'Speed' columns. 
+                       'Time' should represent time intervals (in seconds) and 'Speed' the robot's speed 
+                       at those times (in meters per second). Both columns should be numeric (integer or float).
+
+    Returns:
+    fig (matplotlib.figure.Figure): A matplotlib figure showing the speed of the robot over time, with labeled axes, 
+                                    a title, a grid, and a legend.
+    '''
+
     # Extract the 'Time' and 'Speed' columns
     time = df['Time']
     speed = df['Speed']
