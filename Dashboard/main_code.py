@@ -9,6 +9,30 @@ from Status_robot import plot_robot_status
 from Scan_data import plot_scan_data
 from datetime import datetime
 
+'''
+This Streamlit application displays a dashboard to visualize the progress of a robotic pilot project. 
+The dashboard allows users to select between "Planning" and "Robot Information" visualizations based on uploaded data files.
+
+Modules:
+- Streamlit: For creating the interactive dashboard.
+- Pandas: For data manipulation.
+- Matplotlib and custom plotting functions (from imported modules): For creating visualizations.
+
+Dashboard Components:
+1. Planning Visualization: Allows users to upload a CSV file to display planning-related data.
+2. Robot Information Visualization: Displays various robot data, including battery level, storage capacity, speed, status, 
+   scan data, and prognosis based on an uploaded Excel file.
+
+Streamlit Page Configuration:
+- Title: "Progress Pilot Dashboard"
+- Layout: Wide layout to fit multiple visualizations
+
+User Interactions:
+- Allows users to upload data files (CSV for planning, Excel for robot information).
+- Provides visualizations for different robot metrics and tracks unsupported sheets.
+
+'''
+
 # Configuration of the Streamlit page
 st.set_page_config(page_title="Dashboard", page_icon=":calendar:", layout="wide")
 
@@ -24,9 +48,9 @@ if selected_visualization == "Planning":
     if fl is not None:
         try:
             # Extracting the filename and parsing the date
-            filename = fl.name  # Get the filename
-            date_str = filename.split('.')[0]  # Remove extension
-            current_date = pd.to_datetime(date_str, dayfirst=True)  # Convert to datetime
+            filename = fl.name
+            date_str = filename.split('.')[0]
+            current_date = pd.to_datetime(date_str, dayfirst=True)
             
             fig_storage = plot_storage_data()
             st.pyplot()
@@ -60,12 +84,11 @@ elif selected_visualization == "Robot Information":
                 except Exception as e:
                     st.error(f"Error visualizing battery level data: {e}")
 
-            #Storage Data
+            # Storage Data
             if "StorageData" in sheets:
-                data_battery = pd.read_excel(xls, sheet_name="StorageData")
+                data_storage = pd.read_excel(xls, sheet_name="StorageData")
                 st.subheader("Robot Storage Capacity")
                 try:
-                    data_storage = pd.read_excel(xls, sheet_name="StorageData")
                     fig_storage = plot_storage_data(data_storage)
                     st.pyplot(fig_storage, use_container_width=True)
                     visualized_sheets.add("StorageData")
