@@ -28,8 +28,8 @@ if selected_visualization == "Planning":
             date_str = filename.split('.')[0]  # Remove extension
             current_date = pd.to_datetime(date_str, dayfirst=True)  # Convert to datetime
             
-            fig = plot_planning(fl, current_date)  # Pass the current date
-            st.pyplot(fig)
+            fig_storage = plot_storage_data()
+            st.pyplot()
         except ValueError as e:
             st.error(f"Error in visualization: {e}")
 
@@ -60,8 +60,9 @@ elif selected_visualization == "Robot Information":
                 except Exception as e:
                     st.error(f"Error visualizing battery level data: {e}")
 
-            # Storage Data
+            #Storage Data
             if "StorageData" in sheets:
+                data_battery = pd.read_excel(xls, sheet_name="StorageData")
                 st.subheader("Robot Storage Capacity")
                 try:
                     data_storage = pd.read_excel(xls, sheet_name="StorageData")
@@ -69,7 +70,7 @@ elif selected_visualization == "Robot Information":
                     st.pyplot(fig_storage, use_container_width=True)
                     visualized_sheets.add("StorageData")
                 except Exception as e:
-                    st.error(f"Error visualizing storage data: {e}")
+                    st.error(f"Error visualizing storage data: {e}")
 
             # Robot Speed
             if "Speed robot" in sheets:
