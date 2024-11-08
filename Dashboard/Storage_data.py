@@ -1,11 +1,7 @@
 import matplotlib.pyplot as plt
-import pandas as pd
 
-def plot_storage_data(file_path):
-    # Read data from an Excel file
-    data = pd.read_excel(file_path, sheet_name='StorageData')
-
-    # Extract storage data from the Excel sheet
+def plot_storage_data(data):
+    # Extract storage data from the DataFrame
     total_storage = data['Total Storage (GB)'].iloc[0]
     used_storage = data['Used Storage (GB)'].iloc[0]
 
