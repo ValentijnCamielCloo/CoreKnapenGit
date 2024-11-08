@@ -3,17 +3,32 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 def plot_battery_percentage(df):
-    # Ensure the columns 'Time' and 'Battery Percentage' are present in the Excel file
+    '''
+    Function to plot the battery status of a robot in two visualizations:
+    1. A graph of the battery percentage over time.
+    2. A vertical battery display showing the current battery percentage.
+
+    Parameters:
+    df (pandas.DataFrame): DataFrame containing at least two columns:
+                           - 'Time' (list)
+                           - 'Battery Percentage' (list)
+                           - 'Battery level' (integer)
+
+    Returns:
+    matplotlib.figure.Figure: The generated figure with battery percentages over time and the battery display.
+    '''
+    
+    # Ensure that the columns 'Time' and 'Battery Percentage' are present in the DataFrame
     iterations = df['Time']
     battery_levels = df['Battery Percentage']
 
-    # Get the battery percentage from the first row of the appropriate column (index 0)
+    # Get the battery percentage from the first row of the DataFrame
     battery_percentage = df['Battery level'].iloc[0]
 
     # Create a figure with two subplots
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
 
-    # Plot the battery level line on the first subplot
+    # Plot the battery percentage over time on the first subplot
     axs[0].plot(iterations, battery_levels, label='Battery Percentage', color='#36607D', marker='o')
 
     # Add bars under each point
@@ -28,12 +43,22 @@ def plot_battery_percentage(df):
     axs[0].grid(True)
     axs[0].legend()
 
-    # Function to draw a vertical battery
     def draw_vertical_battery(ax, percentage):
-        # Ensure that percentage is between 0 and 100
+        '''
+        Function to draw a vertical battery with a given percentage.
+
+        Parameters:
+        ax (matplotlib.axes.Axes)
+        percentage (integer)
+
+        Returns:
+        None: The drawing result is added directly to the axis.
+        '''
+        
+        # Ensure the percentage is between 0 and 100
         percentage = max(0, min(percentage, 100))
 
-        # Define battery parameters
+        # Define the battery parameters
         battery_width = 2
         battery_height = 4
         terminal_width = 0.8
@@ -48,7 +73,7 @@ def plot_battery_percentage(df):
         terminal = patches.Rectangle((0.6, battery_height), terminal_width, terminal_height, fill=True, color='#36607D')
         ax.add_patch(terminal)
 
-        # Calculate the height of the battery fill based on the percentage with offset
+        # Calculate the height of the battery fill based on the percentage
         fill_height = (percentage / 100) * (battery_height - 2 * offset)
         fill_y_position = offset
 
@@ -73,6 +98,6 @@ def plot_battery_percentage(df):
     axs[1].set_title('Battery Level')
 
     # Adjust the layout to reduce the space between subplots
-    plt.subplots_adjust(wspace=0.05)  # Reduce wspace for closer subplots
+    plt.subplots_adjust(wspace=0.05)
 
-    return fig  # Return the figure for plotting in Streamlit
+    return fig
