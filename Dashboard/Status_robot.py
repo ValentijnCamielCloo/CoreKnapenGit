@@ -1,8 +1,23 @@
 import matplotlib.pyplot as plt
 
 def plot_robot_status(df_status):
-    # Ensure that you use DataFrame columns correctly
-    # Use the correct column names as they are in your Excel file
+    '''
+    This function visualizes the current status of the robot, including its speed, connection status, 
+    and operational status. It uses the last entries from the 'Speed', 'Status', and 'Connected' columns 
+    of the provided DataFrame to generate a status display.
+
+    Parameters:
+    df_status (pd.DataFrame): A Pandas DataFrame containing the columns:
+                              - 'Speed' (float or integer): The robot's current speed in meters per second.
+                              - 'Status' (string): The operational status of the robot (e.g., 'working', 'paused', 'completed', 'error').
+                              - 'Connected' (boolean or integer): The connection status of the scanner to the robot (True if connected, False if not).
+
+    Returns:
+    fig (matplotlib.figure.Figure): A matplotlib figure displaying the robot's current speed, connection status, 
+                                    and operational status as text in a clean, centered layout.
+    '''
+
+    # Extract the current speed, robot status, and connection status from the last row of the DataFrame
     current_speed = df_status['Speed'].iloc[-1] if 'Speed' in df_status.columns else 0
     robot_status = df_status['Status'].iloc[-1].lower() if 'Status' in df_status.columns else 'unknown'
     connection_status = df_status['Connected'].iloc[-1] if 'Connected' in df_status.columns else False
@@ -25,7 +40,7 @@ def plot_robot_status(df_status):
 
     ax.text(0.5, 0.5, connection_message, fontsize=14, ha='center', va='center', color=connection_color)
 
-    # Set status message and color
+    # Set status message and color based on the robot's operational status
     if robot_status == 'working':
         status_color = 'green'
         status_message = "Status: Working"
