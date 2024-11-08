@@ -123,7 +123,7 @@ class PointCloud:
         self.pcd = []
 
         # Create the main 'ProgressPilot' directory if it doesn't exist
-        main_dir = "ProgressPilot"
+        main_dir = "Data_modeling/ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
             logging.info(f"Main directory created: {main_dir}")
@@ -162,11 +162,13 @@ class PointCloud:
 
         """
         ply_files = sorted([f for f in os.listdir(ply_dir) if f.endswith('.ply')])
-        # logging.info(f"Loading point cloud from {self.file_path}")
         for scan in ply_files:
             file_path = os.path.join(ply_dir, scan)
             pc = o3d.io.read_point_cloud(str(file_path))
+            logging.info(f"Loading point cloud: {scan}")
             self.pcd.append(pc)
+        if len(ply_files) == 0:
+            logging.error('No point clouds are loaded')
 
     def visualize(self, title=None, save_as_png=False, original_colors=True, rotate=False):
         """
@@ -211,7 +213,7 @@ class PointCloud:
                 filename = title.replace(" ", "_") + ".png"
                 save_path = os.path.join(self.output_dir, filename)
                 plotter.screenshot(save_path)
-                print(f"Visualization saved as {save_path}")
+                logging.info(f"Visualization saved as {save_path}")
 
             if rotate:
                 rotation_speed = 1
@@ -236,12 +238,12 @@ class PointCloud:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
-            # Get all .ply files in the directory
-            ply_files = glob.glob(os.path.join('../Sensor_data', "*.ply"))
+            # Get all .ply files in the Sensor_data directory
+            ply_files = glob.glob(os.path.join('Sensor_data', "*.ply"))
 
             # Load the csv file to get the coordinates of the Robotic_control path
             csv_scan_scales = 'scancolor_scale.csv'
-            file_path = os.path.join('../Sensor_data', csv_scan_scales)
+            file_path = os.path.join('Sensor_data', csv_scan_scales)
             scan_scales = pd.read_csv(file_path)
             scale_values = {row['Scan']: float(row['Scale']) for index, row in scan_scales.iterrows()}  # Ensure scale is float
 
@@ -333,7 +335,6 @@ class PointCloud:
                         return (0, 0, 255)  # Assign blue
 
                 # Apply the appropriate coloring function based on the scan number
-                # Scans_1: [1,2,3,5], scans_2: [3,5]
                 if int(scan_name.split("_")[1]) in [1, 2, 3, 5]:
                     assign_color_based_on_red = assign_color_based_on_red_switched
                 else:
@@ -361,7 +362,6 @@ class PointCloud:
                 colorized.append(pc)
 
             self.pcd = colorized
-            print(self.pcd)
 
             # Save
             # Define a path one level up from `output_folder`
@@ -380,29 +380,30 @@ class PointCloud:
                 # Save the point cloud as a .ply file using Open3D
                 o3d.io.write_point_cloud(file_path_in_parent, pc)
 
-                # self._save_ply('colorized_1')
-
         else:
-            print('! No point clouds to colorize')
+            logging.error('! No point clouds to colorize')
 
     def translate_orientate(self):
+        """
+        Translate and orientate the separate scans as rough alignment.
+        """
         if self.pcd:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
             # Find the CSV file with format {yyyymmdd}_path_coordinates.csv
             csv_coordinates = None
-            for file in os.listdir('../Robotic_control'):
+            for file in os.listdir('Robotic_control'):
                 if file.endswith('_path_coordinates.csv'):
                     csv_coordinates = file
 
             # Ensure a CSV file was found
             if csv_coordinates is None:
-                print("! No path_coordinates file found.")
+                logging.error("! No path_coordinates file found.")
                 return []
 
             # Load the csv file to get the coordinates of the Robotic_control path
-            file_path = os.path.join('../Robotic_control', csv_coordinates)
+            file_path = os.path.join('Robotic_control', csv_coordinates)
             path_coordinates = pd.read_csv(file_path)
 
             translated_orientated = []
@@ -425,7 +426,7 @@ class PointCloud:
             self._save_ply('translated_orientated')
 
         else:
-            print('! No point clouds to translate and orientate')
+            logging.error('! No point clouds to translate and orientate')
 
     def estimate_normals(self, radius=0.1, max_nn=30, orientate_camera=False, orientate_not_middle=False, point_cloud=None, visualize_normals=False):
         """
@@ -450,17 +451,17 @@ class PointCloud:
                 if orientate_not_middle:
                     # Find the CSV file with format {ddmmyyyy}_path_coordinates.csv
                     csv_coordinates = None
-                    for file in os.listdir('../Robotic_control'):
+                    for file in os.listdir('Robotic_control'):
                         if file.endswith('_path_coordinates.csv'):
                             csv_coordinates = file
 
                     # Ensure a CSV file was found
                     if csv_coordinates is None:
-                        print("! No path_coordinates file found.")
+                        logging.error("! No path_coordinates file found.")
                         return []
 
                     # Load the CSV file with coordinates
-                    file_path = os.path.join('../Robotic_control', csv_coordinates)
+                    file_path = os.path.join('Robotic_control', csv_coordinates)
                     path_coordinates = pd.read_csv(file_path)
 
                     x_middle = path_coordinates.iloc[0]['x']
@@ -469,7 +470,7 @@ class PointCloud:
 
                     centroid = np.array([x_middle, y_middle, z_middle])
 
-                    print(f'centroid: {centroid}')
+                    logging.info(f'centroid: {centroid}')
                     pc.orient_normals_towards_camera_location(camera_location=centroid)
 
                     # Flip the normals
@@ -483,7 +484,7 @@ class PointCloud:
 
 
         else:
-            print("! No point cloud data for calculating mean normal vector.")
+            logging.error("! No point cloud data for calculating mean normal vector.")
 
     def voxel_downsample(self, voxel_size, point_cloud=None):
         """
@@ -500,7 +501,7 @@ class PointCloud:
             if type(point_cloud) is not list:
                 point_cloud = [point_cloud]
 
-            print(f"\nDownsampling point clouds with voxel size {voxel_size}")
+            logging.info(f"\nDownsampling point clouds with voxel size {voxel_size}")
             pcd = []
             for i, pc in enumerate(point_cloud):
                 pc = pc.voxel_down_sample(voxel_size=voxel_size)
@@ -510,7 +511,7 @@ class PointCloud:
             self._save_ply("downsampled")
 
         else:
-            print("! No point cloud data to downsample.")
+            logging.error("! No point cloud data to downsample.")
 
     def remove_outliers_radius(self, nb_points, radius):
         """
@@ -518,13 +519,13 @@ class PointCloud:
 
         Parameters:
         - nb_points (int): minimum amount of points that the sphere should contain
-        - radius (float): radius of the sphere that will be used for counting the neighbors
+        - radius (float): radius of the sphere that will be used for counting the neighbors (m).
         """
         if self.pcd:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
-            print('\nRemoving outliers within radius...')
+            logging.info(f'Removing outliers with radius of {radius} m')
             clean_pcd = []
             for pc in self.pcd:
                 points_start = len(pc.points)
@@ -533,13 +534,13 @@ class PointCloud:
                 clean_pcd.append(cleaned_pcd)
 
                 points_end = len(cleaned_pcd.points)
-                print(f'number of removed points: {points_start - points_end}')
+                logging.infor(f'number of removed points: {points_start - points_end}')
 
             self.pcd = clean_pcd
             self._save_ply("radius_filtered")
 
         else:
-            print("! No point cloud data to filter the outliers.")
+            logging.error("! No point cloud data to filter the outliers.")
 
     def remove_outliers_normal(self, radius, threshold_angle, max_nn):
         """
@@ -554,7 +555,7 @@ class PointCloud:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
-            print('\nRemoving outliers based on normals...')
+            logging.info('Removing outliers based on normals')
             filtered = []
             for pc in self.pcd:
                 points_start = len(pc.points)
@@ -608,14 +609,14 @@ class PointCloud:
                 filtered.append(filtered_pcd)
 
                 points_end = len(filtered_pcd.points)
-                print(f'number of removed points: {points_start - points_end}')
+                logging.info(f'number of removed points: {points_start - points_end}')
                 # o3d.visualization.draw_geometries([filtered_pcd], point_show_normal=True)
 
             self.pcd = filtered
             self._save_ply('filtered_normals')
 
         else:
-            print("! No point cloud data to filter the outliers.")
+            logging.error("! No point cloud data to filter the outliers.")
 
     def filter_colors(self, filter_color, color_threshold):
         """
@@ -654,11 +655,12 @@ class PointCloud:
             self.pcd = filtered
             self._save_ply('filtered_colors')
 
+        else:
+            logging.error('! No point cloud to filter')
+
     def registration(self):
         """
         Register different point clouds consecutively to create one 3D object.
-
-        - sources_pcd (PointCloud) = a (list of) point cloud(s) which will be registered one by one
         """
         if self.pcd:
             if type(self.pcd) is not list:
@@ -674,12 +676,8 @@ class PointCloud:
             elevation_cloud = self.pcd[0]
 
             # Get all .ply files in the directory
-            ply_files = glob.glob(os.path.join('../Sensor_data', "*.ply"))
+            ply_files = glob.glob(os.path.join('Sensor_data', "*.ply"))
             cumulative_name = ply_files[0]
-
-            # Export the initial cumulative cloud
-            # initial_registered_path = os.path.join(output_folder, "Registered_0.ply")
-            # o3d.io.write_point_cloud(initial_registered_path, cumulative_cloud)
 
             # Create CSV file to store registration details
             csv_file_path = os.path.join(self.output_dir, 'registered_path_coordinates.csv')
@@ -692,10 +690,9 @@ class PointCloud:
 
                 # Load and register each scan iteratively
                 for i in range(1, len(ply_files)):
-                    # source_path = os.path.join(self.output_dir, ply_files[i])
                     source = self.pcd[i]
                     source_name = ply_files[i]
-                    # print(f"Registering {cumulative_name} to {source_name}")
+                    logging.info(f"Registering {cumulative_name} to {source_name}")
 
                     # Visualize the source cloud before registration
                     # initial_visualization = f"INITIAL ALIGNMENT: Source: {source_name}, Target: {cumulative_name}"
@@ -705,11 +702,11 @@ class PointCloud:
                     for scale in range(3):
                         iteration = max_iter[scale]
                         radius = voxel_radius[scale]
-                        print(f"Scale {scale + 1} - Iterations: {iter}, Voxel size: {radius}")
+                        logging.info(f"Scale {scale + 1} - Iterations: {iter}, Voxel size: {radius}")
 
                         # Before registration, show current counts
-                        # print(
-                            # f"Before registration: Cumulative cloud has {len(cumulative_cloud.points)} points, Source has {len(source.points)} points.")
+                        logging.info(
+                            f"Before registration: Cumulative cloud has {len(cumulative_cloud.points)} points, Source has {len(source.points)} points.")
 
                         # Downsample cumulative cloud and source cloud
                         cumulative_down = cumulative_cloud.voxel_down_sample(radius)
@@ -728,25 +725,15 @@ class PointCloud:
                                                                               relative_rmse=1e-6,
                                                                               max_iteration=iteration))
                         current_transformation = result_icp.transformation
-                        print(f"ICP Result for Scale {scale + 1}:")
-                        print(f"  Transformation matrix:\n{current_transformation}")
-                        print(f"  Fitness: {result_icp.fitness}, Inlier RMSE: {result_icp.inlier_rmse}")
-
-                        # Visualize after each scale
-                        scale_visualization = f"SCALE {scale + 1}: Source: {source_name}, Target: {cumulative_name} (after scale {scale + 1})"
-                        transformed_source = source_down.transform(current_transformation)
-                        # o3d.visualization.draw_geometries([transformed_source, cumulative_down],
-                        #                                   window_name=scale_visualization)
+                        logging.info(f"ICP Result for Scale {scale + 1}:")
+                        logging.info(f"  Transformation matrix:\n{current_transformation}")
+                        logging.info(f"  Fitness: {result_icp.fitness}, Inlier RMSE: {result_icp.inlier_rmse}")
 
                     # Transform the source to align with the cumulative point cloud
                     source.transform(current_transformation)
 
                     # Combine the cumulative cloud with the registered source
                     combined_cloud = cumulative_cloud + source
-
-                    # Visualize the registered source and cumulative cloud
-                    window_title_registration = f"REGISTERED: Source: {source_name}, Target: {cumulative_name} (after registration)"
-                    # o3d.visualization.draw_geometries([combined_cloud], window_name=window_title_registration)
 
                     # Calculate the final translation and rotation
                     translation = current_transformation[:3, 3]
@@ -761,29 +748,23 @@ class PointCloud:
                     rotation_degrees = tuple(np.degrees(rot) for rot in rotation)
 
                     # Print the translation and rotation
-                    # print(
-                    #     f"Translation of source '{source_name}' compared to target '{cumulative_name}': {translation}")
-                    # print(
-                    #     f"Rotation of source '{source_name}' compared to target '{cumulative_name}': {rotation_degrees}")
+                    logging.info(
+                        f"Translation of source '{source_name}' compared to target '{cumulative_name}': {translation}")
+                    logging.info(
+                        f"Rotation of source '{source_name}' compared to target '{cumulative_name}': {rotation_degrees}")
 
                     # Write the final translation and rotation to the CSV
                     csv_writer.writerow([source_name, cumulative_name, translation[0], translation[1], translation[2],
                                          *rotation_degrees])
 
-                    # if i %2 == 0:     # Only add elevations, even Sensor_data
-                    #     elevation_cloud = elevation_cloud + source
                     # Update cumulative_cloud and cumulative_name with the new registered source
                     cumulative_cloud = combined_cloud
-                    # cumulative_name = f"Registered_{i}.ply"
-
 
             self.pcd = cumulative_cloud
-            # Export the combined registered source
             self._save_ply('registered')
-            # o3d.io.write_point_cloud(self.pcd)
 
         else:
-            print("! No point cloud data for registration.")
+            logging.error("! No point cloud data for registration.")
 
     def cluster_kmeans_normals(self, max_k=10, remove_ground=False, biggest_cluster=False, show_elbow=False):
         """
@@ -798,7 +779,7 @@ class PointCloud:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
 
-            print('\nClustering point cloud based on normals...')
+            logging.info('Clustering point cloud based on normals')
             clustering = []
             for pc in self.pcd:
                 # Ensure that the point cloud has normals computed
@@ -813,7 +794,7 @@ class PointCloud:
                 else:
                     show_figure = False
                 n_clusters = elbow_method(normals, self.output_dir, max_k=max_k, show_figure=show_figure)
-                print(f"Optimal k-clusters: {n_clusters}")
+                logging.info(f"Optimal k-clusters: {n_clusters}")
 
                 # Apply KMeans clustering
                 kmeans = KMeans(n_clusters=n_clusters, random_state=0).fit(normals)
@@ -854,11 +835,12 @@ class PointCloud:
             self._save_ply('cluster_kmeans')
 
         else:
-            print("! No point cloud data for clustering.")
+            logging.error("! No point cloud data for clustering.")
 
     def cluster_dbscan(self, eps, min_samples, biggest_cluster=True):
         """
         Cluster the point cloud using DBSCAN, which does not require specifying the number of clusters.
+        Used to filter out any objects not belonging to the brick wall.
 
         Parameters:
         - eps (float): Maximum distance between two points to be considered in the same cluster.
@@ -868,8 +850,8 @@ class PointCloud:
         if self.pcd:
             if type(self.pcd) is not list:
                 self.pcd = [self.pcd]
-            print(self.pcd)
-            print('\nRemoving surrounding objects with DBSCAN clustering...')
+
+            logging.info('Removing surrounding objects with DBSCAN clustering')
             clustering = []
             for pc in self.pcd:
                 points = np.asarray(pc.points)
@@ -896,7 +878,7 @@ class PointCloud:
 
                 clustering.append(clusters)
 
-                # print(f"Number of clusters after filtering: {len(clusters)}")
+                logging.info(f"Number of clusters after filtering: {len(clusters)}")
 
             self.pcd = clustering
             if len(self.pcd) == 1:
@@ -905,22 +887,29 @@ class PointCloud:
             self._save_ply('cluster_DBSCAN')
 
         else:
-            print("! No point cloud data for clustering.")
+            logging.error("! No point cloud data for clustering.")
 
     def translate_to_origin(self, dist_scanner_obj, height_scanner):
-        # Find the CSV file with format {ddmmyyyy}_path_coordinates.csv
+        """
+        Align the scan and model by translating the scan to the origin
+
+        Parameters:
+        - dist_scanner_obj (float): Distance between scanner and object in meters.
+        - height_scanner (float): The height of the scanner in meters.
+        """
+        # Find the CSV file with format {yyyymmdd}_path_coordinates.csv
         csv_coordinates = None
-        for file in os.listdir('../Robotic_control'):
+        for file in os.listdir('Robotic_control'):
             if file.endswith('_path_coordinates.csv'):
                 csv_coordinates = file
 
         # Ensure a CSV file was found
         if csv_coordinates is None:
-            print("! No path_coordinates file found.")
+            logging.info("! No path_coordinates file found.")
             return []
 
         # Load the csv file to get the coordinates of the Robotic_control path
-        file_path = os.path.join('../Robotic_control', csv_coordinates)
+        file_path = os.path.join('Robotic_control', csv_coordinates)
         path_coordinates = pd.read_csv(file_path)
 
         # Get the coordinates and rotation for each scan from CSV
@@ -956,7 +945,7 @@ class PointCloud:
             self._save_ply('translated')
 
         else:
-            print("! No point cloud data for translation.")
+            logging.error("! No point cloud data for translation.")
 
     def _save_ply(self, file_name, point_cloud=None):
         """
@@ -986,17 +975,17 @@ class PointCloud:
                 for i, pc in enumerate(point_cloud):
                     save_path = os.path.join(output_dir, f"{file_name}_{i}.ply")
                     o3d.io.write_point_cloud(save_path, pc)
-                    print(f"Saved: {save_path}")
+                    logging.info(f"Saved: {save_path}")
             else:
                 for pc in point_cloud:
                     save_path = os.path.join(output_dir, f"{self.save_counter}_{file_name}.ply")
                     o3d.io.write_point_cloud(save_path, pc)
-                    print(f"Saved: {save_path}")
+                    logging.info(f"Saved: {save_path}")
 
             # Increment the counter after each save
             self.save_counter += 1
         else:
-            print("! No point cloud to save.")
+            logging.error("! No point cloud to save.")
 
 
 class Mesh:
@@ -1009,10 +998,10 @@ class Mesh:
         self.meshes = []
 
         # Find the latest created output directory inside 'ProgressPilot'
-        main_dir = "ProgressPilot"
+        main_dir = "Data_modeling/ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
-            print(f"Main directory created: {main_dir}")
+            logging.info(f"Main directory created: {main_dir}")
 
         # Get all directories in 'ProgressPilot'
         all_items = os.listdir(main_dir)
@@ -1023,7 +1012,7 @@ class Mesh:
             progress_dirs.sort(key=lambda d: os.path.getmtime(os.path.join(main_dir, d)), reverse=True)
             self.output_dir = os.path.join(main_dir, progress_dirs[0])
         else:
-            raise Exception(f"No directories found in {main_dir}. Ensure that you first create a PointCloud project.")
+            logging.error(f"No directories found in {main_dir}. Ensure that you first create a PointCloud project.")
 
     def load_meshes(self):
         """
@@ -1032,38 +1021,38 @@ class Mesh:
         """
         # Find the latest Excel file with format {yyyymmdd}_facade_order.csv
         latest_excel_file = None
-        for file in os.listdir('model'):
+        for file in os.listdir('Data_modeling/model'):
             if file.endswith('_facade_order.csv'):
                 if latest_excel_file is None or file > latest_excel_file:
                     latest_excel_file = file
 
         # Ensure an Excel file was found
         if latest_excel_file is None:
-            print("! No facade order Excel file found.")
+            logging.info("! No facade order Excel file found.")
             return []
 
         # Extract the date from the file name
         date_str = latest_excel_file.split('_')[0]
 
         # Load the Excel file to get the order and facade columns
-        file_path = os.path.join('model', latest_excel_file)
+        file_path = os.path.join('Data_modeling/model', latest_excel_file)
         facade_data = pd.read_csv(file_path)
 
-        print(f"\nUsing the latest facade order file: {latest_excel_file}")
+        logging.info(f"Using the latest facade order file: {latest_excel_file}")
 
         # Loop through each facade specified in the Excel file
         for facade in facade_data['facade']:
             # Construct the mesh filename using the date and facade name
             mesh_file_name = f"{date_str}_{facade}.ply"
-            mesh_file_path = os.path.join('model', mesh_file_name)
+            mesh_file_path = os.path.join('Data_modeling/model', mesh_file_name)
 
             # Check if the mesh file exists and load it
             if os.path.exists(mesh_file_path):
                 mesh = pv.read(mesh_file_path)
                 self.meshes.append(mesh)
-                print(f"Loaded mesh: {mesh_file_name}")
+                logging.info(f"Loaded mesh: {mesh_file_name}")
             else:
-                print(f"! Mesh file {mesh_file_name} does not exist in the directory.")
+                logging.error(f"! Mesh file {mesh_file_name} does not exist in the directory.")
 
         self._save_meshes('model_mesh')
 
@@ -1111,7 +1100,7 @@ class Mesh:
                 filename = title.replace(" ", "_") + ".png"
                 save_path = os.path.join(self.output_dir, filename)
                 plotter.screenshot(save_path)
-                print(f"Mesh visualization saved as {save_path}")
+                logging.info(f"Mesh visualization saved as {save_path}")
 
             if rotate:
                 rotation_speed = 1
@@ -1129,7 +1118,7 @@ class Mesh:
             plotter.close()
 
         else:
-            print("! No meshes loaded to visualize.")
+            logging.error("! No meshes loaded to visualize.")
 
     def _save_meshes(self, filename="mesh"):
         """
@@ -1150,10 +1139,10 @@ class Mesh:
             for i, mesh in enumerate(self.meshes):
                 save_path = os.path.join(output_dir, f"{filename}_{i}.ply")
                 mesh.save(save_path)
-                print(f"Saved: {save_path}")
+                logging.info(f"Saved: {save_path}")
 
         else:
-            print("! No meshes to save.")
+            logging.error("! No meshes to save.")
 
 
 class ComparePCDMesh:
@@ -1171,10 +1160,10 @@ class ComparePCDMesh:
         self.surface = None
 
         # Find the latest created output directory inside 'ProgressPilot'
-        main_dir = "ProgressPilot"
+        main_dir = "Data_modeling/ProgressPilot"
         if not os.path.exists(main_dir):
             os.makedirs(main_dir)
-            print(f"Main directory created: {main_dir}")
+            logging.info(f"Main directory created: {main_dir}")
 
         # Get all directories in 'ProgressPilot'
         all_items = os.listdir(main_dir)
@@ -1185,7 +1174,7 @@ class ComparePCDMesh:
             progress_dirs.sort(key=lambda d: os.path.getmtime(os.path.join(main_dir, d)), reverse=True)
             self.output_dir = os.path.join(main_dir, progress_dirs[0])
         else:
-            raise Exception(f"No directories found in {main_dir}. Ensure that you first create a PointCloud project.")
+            logging.error(f"No directories found in {main_dir}. Ensure that you first create a PointCloud project.")
 
     def pair_pcd_mesh(self):
         """
@@ -1213,7 +1202,7 @@ class ComparePCDMesh:
 
                     alignment = np.dot(mean_normal_pc, mean_normal_mesh)
                     if alignment > 0.9:
-                        print(f"Mesh {i} matches the cluster {j} with an alignment of {alignment:.2f}")
+                        logging.info(f"Mesh {i} matches the cluster {j} with an alignment of {alignment:.2f}")
                         pair.append(pc)
                         count_alignment += 1
                     else:
@@ -1226,7 +1215,7 @@ class ComparePCDMesh:
             self.pcd = pair
 
         else:
-            print(f'! No meshes or point clouds are found for pairing')
+            logging.error(f'! No meshes or point clouds are found for pairing')
 
     def check_bricks(self, points_per_brick):
         """
@@ -1243,10 +1232,10 @@ class ComparePCDMesh:
             if type(self.meshes) is not list:
                 self.meshes = [self.meshes]
 
-            print('\nPairing the right point cloud to mesh...')
+            logging.info('Pairing the right point cloud to mesh')
             self.pair_pcd_mesh()  # Pair point clouds to meshes
 
-            print('\nChecking which bricks are built...')
+            logging.info('Checking which bricks are built')
             built = [None] * len(self.pcd)  # Initialize lists for built brick
             not_built = [None] * len(self.pcd)  # Initialize lists for not built bricks
             surface = [None] * len(self.pcd)  # Initialize surface mesh (bricks in model) list
@@ -1260,7 +1249,7 @@ class ComparePCDMesh:
                 surface_mesh = mesh.extract_surface()
                 surface[i] = surface_mesh
                 n_surface_mesh = surface_mesh.n_cells
-                print(f'Wall {i} - number of bricks in model: {n_surface_mesh}')
+                logging.info(f'Wall {i} - number of bricks in model: {n_surface_mesh}')
 
                 if self.pcd[i] is not None:  # Ensure there's a point cloud to check
                     pc = self.pcd[i]
@@ -1310,7 +1299,7 @@ class ComparePCDMesh:
                                 if y_bound[0] < py < y_bound[1] and z_bound[0] < pz < z_bound[1]:
                                     points_inside += 1
                         else:
-                            print("! Something went wrong with finding the right bounds")
+                            logging.error("! Something went wrong with finding the right bounds")
 
                         # Classify the bricks in built or not built based on the amount of points inside
                         if points_inside >= points_per_brick:
@@ -1328,7 +1317,7 @@ class ComparePCDMesh:
             self.surface = surface  # Update surface attribute
 
         else:
-            print("! No meshes or point clouds were found for checking the bricks")
+            logging.error("! No meshes or point clouds were found for checking the bricks")
 
     def calculate_results(self):
         """
@@ -1337,20 +1326,17 @@ class ComparePCDMesh:
         - Return: Tuple containing total built bricks, total not built bricks, and progress percentage for each wall.
         """
         if self.built:
-            print('\nCalculating the results...')
             n_bricks_total = []  # List for total built bricks per wall
             n_not_built_bricks_total = []  # List for total not built bricks per wall
             progress_total = []  # List for progress percentages per wall
 
             for i, bricks in enumerate(self.built):
-                print(f'Wall {i}:')
-
                 # Count the total number of built bricks
                 if bricks:
                     n_bricks = len(bricks)
                 else:
                     n_bricks = 0
-                print(f'- Number of bricks built: {n_bricks}')
+                logging.info(f'- Number of bricks built: {n_bricks}')
                 n_bricks_total.append(n_bricks)
 
                 # Count the total number of not built bricks
@@ -1359,7 +1345,7 @@ class ComparePCDMesh:
                 else:
                     # surface = self.surface[i]
                     n_not_built_bricks = 0
-                print(f'- Number of bricks not built: {n_not_built_bricks}')
+                logging.info(f'- Number of bricks not built: {n_not_built_bricks}')
                 n_not_built_bricks_total.append(n_not_built_bricks)
 
                 # Calculate the progress of this specific wall if there are bricks
@@ -1367,17 +1353,17 @@ class ComparePCDMesh:
                     progress = round(n_bricks / (n_bricks + n_not_built_bricks) * 100, 2)
                 else:
                     progress = 0
-                print(f'- Progress: {progress} %')
+                logging.info(f'- Progress: {progress} %')
                 progress_total.append(progress)
 
             # Calculate the progress of all the walls together
             progress_sum = round(sum(n_bricks_total) / (sum(n_bricks_total) + sum(n_not_built_bricks_total)) * 100, 2)
-            print(f'\nThe total progress: {progress_sum} %')
+            logging.info(f'The total progress: {progress_sum} %')
 
             return n_bricks_total, n_not_built_bricks_total, progress_total
 
         else:
-            print('! There is no point cloud for calculating the results')
+            logging.error('! There is no point cloud for calculating the results')
 
     def visualize(self, title=None, save_as_png=False, original_colors=True, rotate=False):
         """
@@ -1428,7 +1414,7 @@ class ComparePCDMesh:
                 filename = title.replace(" ", "_") + ".png"  # Use the title as filename, but replace ' ' with '_'
                 save_path = os.path.join(self.output_dir, filename)
                 plotter.screenshot(save_path)
-                print(f"Point cloud and mesh visualization saved as {save_path}")
+                logging.info(f"Point cloud and mesh visualization saved as {save_path}")
 
             if rotate:
                 rotation_speed = 1
@@ -1446,7 +1432,7 @@ class ComparePCDMesh:
             plotter.close()
 
         else:
-            print("! No point clouds or meshes loaded to visualize.")
+            logging.error("! No point clouds or meshes loaded to visualize.")
 
     def visualize_result(self, filename_vis, title='Results', save_as_png=True, rotate=False):
         """
@@ -1474,7 +1460,7 @@ class ComparePCDMesh:
                 plotter.add_mesh(built_bricks, color='green', opacity=1, show_edges=True)
 
             # Load the entire wall for visualisation, this shows the wall in 3D
-            file_path_vis = os.path.join("model", filename_vis)
+            file_path_vis = os.path.join("Data_modeling/model", filename_vis)
             mesh_vis = pv.read(file_path_vis)
             plotter.add_mesh(mesh_vis, color='red', opacity=0.2)
 
@@ -1500,7 +1486,7 @@ class ComparePCDMesh:
                 filename = title.replace(" ", "_") + ".png"  # Use the title as filename, but replace ' ' with '_'
                 save_path = os.path.join(self.output_dir, filename)
                 plotter.screenshot(save_path)
-                print(f"Results saved as {save_path}")
+                logging.info(f"Results saved as {save_path}")
 
             if rotate:
                 rotation_speed = 1
@@ -1518,7 +1504,7 @@ class ComparePCDMesh:
             plotter.close()
 
         else:
-            print("! No point clouds or meshes loaded to visualize.")
+            logging.error("! No point clouds or meshes loaded to visualize.")
 
     def write_results(self):
         """
@@ -1542,7 +1528,7 @@ class ComparePCDMesh:
         # Find corresponding date and time of each scan
         date = []
         time = []
-        for file in os.listdir('../Sensor_data'):
+        for file in os.listdir('Sensor_data'):
             if file.endswith('_filtered.ply'):  # Check only for files ending with '_filtered.ply'
                 parts = file.split('_')
 
@@ -1560,18 +1546,18 @@ class ComparePCDMesh:
 
         # Find corresponding facade to each wall number in the facade order file
         latest_excel_file = None
-        for file in os.listdir('model'):
+        for file in os.listdir('Data_modeling/model'):
             if file.endswith('_facade_order.csv'):
                 if latest_excel_file is None or file > latest_excel_file:
                     latest_excel_file = file
 
         # Ensure an Excel file was found
         if latest_excel_file is None:
-            print("! No facade order Excel file found.")
+            logging.error("! No facade order Excel file found.")
             return []
 
         # Load the Excel file to get the facade column and add it to a list
-        file_path = os.path.join('model', latest_excel_file)
+        file_path = os.path.join('Data_modeling/model', latest_excel_file)
         facade_data = pd.read_csv(file_path, sep=';')
         facades = facade_data['facade'].tolist()
 
@@ -1591,4 +1577,4 @@ class ComparePCDMesh:
             progress_total = round(sum(n_bricks) / (sum(n_bricks) + sum(n_no_bricks)) * 100, 2)
             writer.writerow(['total', '', '', '', sum(n_bricks), sum(n_no_bricks), progress_total])
 
-        print(f"\nResults written to {save_path}")
+        logging.info(f"Results written to {save_path}")

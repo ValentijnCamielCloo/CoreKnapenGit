@@ -1,0 +1,310 @@
+2024-11-08 11:39:24,042 - INFO - Output directory created: ProgressPilot\ProgressPilot_1_20241108_113924
+2024-11-08 11:40:37,930 - INFO - Output directory created: ProgressPilot\ProgressPilot_2_20241108_114037
+2024-11-08 14:00:54,164 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_3_20241108_140054
+2024-11-08 14:01:57,787 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_4_20241108_140157
+2024-11-08 14:03:36,223 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_5_20241108_140336
+2024-11-08 14:08:59,988 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_6_20241108_140859
+2024-11-08 14:10:12,177 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_7_20241108_141012
+2024-11-08 14:10:46,194 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_141046
+2024-11-08 14:11:59,108 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_9_20241108_141159
+2024-11-08 14:12:35,778 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_10_20241108_141235
+2024-11-08 14:15:12,041 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_11_20241108_141512
+2024-11-08 14:16:24,767 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_12_20241108_141624
+2024-11-08 14:16:51,057 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_13_20241108_141651
+2024-11-08 14:18:42,716 - INFO - Main directory created: Data_modeling/ProgressPilot
+2024-11-08 14:18:42,716 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_1_20241108_141842
+2024-11-08 14:19:31,234 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_2_20241108_141931
+2024-11-08 14:21:28,336 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_3_20241108_142128
+2024-11-08 14:24:38,582 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_4_20241108_142438
+2024-11-08 14:25:25,250 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_5_20241108_142525
+2024-11-08 14:26:25,584 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_6_20241108_142625
+2024-11-08 14:28:45,565 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_7_20241108_142845
+2024-11-08 16:30:08,624 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008
+2024-11-08 16:30:08,686 - INFO - Loading point cloud: colorized_0.ply
+2024-11-08 16:30:08,739 - INFO - Loading point cloud: colorized_1.ply
+2024-11-08 16:30:08,791 - INFO - Loading point cloud: colorized_2.ply
+2024-11-08 16:30:08,841 - INFO - Loading point cloud: colorized_3.ply
+2024-11-08 16:30:08,906 - INFO - Loading point cloud: colorized_4.ply
+2024-11-08 16:30:08,961 - INFO - Loading point cloud: colorized_5.ply
+2024-11-08 16:30:09,021 - INFO - Loading point cloud: colorized_6.ply
+2024-11-08 16:30:09,069 - INFO - Loading point cloud: colorized_7.ply
+2024-11-08 16:30:13,099 - INFO - Visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Colorized_loaded_pcd.png
+2024-11-08 16:30:13,306 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_0.ply
+2024-11-08 16:30:13,386 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_1.ply
+2024-11-08 16:30:13,459 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_2.ply
+2024-11-08 16:30:13,568 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_3.ply
+2024-11-08 16:30:13,681 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_4.ply
+2024-11-08 16:30:13,736 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_5.ply
+2024-11-08 16:30:13,807 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_6.ply
+2024-11-08 16:30:13,920 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\1_translated_orientated\translated_orientated_7.ply
+2024-11-08 16:30:15,594 - INFO - Visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Translated_and_orientated_pcd.png
+2024-11-08 16:30:15,854 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_0.ply
+2024-11-08 16:30:15,863 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_1.ply
+2024-11-08 16:30:15,873 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_2.ply
+2024-11-08 16:30:15,881 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_3.ply
+2024-11-08 16:30:15,907 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_4.ply
+2024-11-08 16:30:15,916 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_5.ply
+2024-11-08 16:30:15,928 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_6.ply
+2024-11-08 16:30:15,936 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\2_filtered_colors\filtered_colors_7.ply
+2024-11-08 16:30:17,244 - INFO - Visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Filtered_on_colors.png
+2024-11-08 16:30:17,296 - INFO - Registering Sensor_data\Scan_1_20241030_115156_filtered.ply to Sensor_data\Scan_2_20241030_115459_filtered.ply
+2024-11-08 16:30:17,296 - INFO - Before registration: Cumulative cloud has 94144 points, Source has 29097 points.
+2024-11-08 16:30:18,103 - INFO - ICP Result for Scale 1:
+2024-11-08 16:30:18,104 - INFO -   Transformation matrix:
+[[ 0.99969507  0.02026048 -0.01411699  0.02784046]
+ [-0.02033599  0.99977954 -0.00522589 -0.01053819]
+ [ 0.014008    0.00551138  0.99988669 -0.01111366]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:18,104 - INFO -   Fitness: 0.5080398162327718, Inlier RMSE: 0.0028745524104530334
+2024-11-08 16:30:18,104 - INFO - Before registration: Cumulative cloud has 94144 points, Source has 29097 points.
+2024-11-08 16:30:18,364 - INFO - ICP Result for Scale 2:
+2024-11-08 16:30:18,365 - INFO -   Transformation matrix:
+[[ 0.99969507  0.02026048 -0.01411699  0.02784046]
+ [-0.02033599  0.99977954 -0.00522589 -0.01053819]
+ [ 0.014008    0.00551138  0.99988669 -0.01111366]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:18,365 - INFO -   Fitness: 0.5080398162327718, Inlier RMSE: 0.002874552410453045
+2024-11-08 16:30:18,365 - INFO - Before registration: Cumulative cloud has 94144 points, Source has 29097 points.
+2024-11-08 16:30:18,561 - INFO - ICP Result for Scale 3:
+2024-11-08 16:30:18,562 - INFO -   Transformation matrix:
+[[ 0.99969507  0.02026048 -0.01411699  0.02784046]
+ [-0.02033599  0.99977954 -0.00522589 -0.01053819]
+ [ 0.014008    0.00551138  0.99988669 -0.01111366]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:18,562 - INFO -   Fitness: 0.5080398162327718, Inlier RMSE: 0.0028745524104530525
+2024-11-08 16:30:18,580 - INFO - Translation of source 'Sensor_data\Scan_2_20241030_115459_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': [ 0.02784046 -0.01053819 -0.01111366]
+2024-11-08 16:30:18,580 - INFO - Rotation of source 'Sensor_data\Scan_2_20241030_115459_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': (-1.1653610133495584, -0.8026256637656993, 0.31581145579798486)
+2024-11-08 16:30:18,580 - INFO - Registering Sensor_data\Scan_1_20241030_115156_filtered.ply to Sensor_data\Scan_3_20241030_115628_filtered.ply
+2024-11-08 16:30:18,580 - INFO - Before registration: Cumulative cloud has 123241 points, Source has 39087 points.
+2024-11-08 16:30:18,770 - INFO - ICP Result for Scale 1:
+2024-11-08 16:30:18,770 - INFO -   Transformation matrix:
+[[ 0.99982152  0.00620888 -0.01784316  0.04531347]
+ [-0.00623776  0.99997932 -0.00156362 -0.01658783]
+ [ 0.01783309  0.00167464  0.99983958 -0.00799259]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:18,770 - INFO -   Fitness: 0.8578066914498141, Inlier RMSE: 0.0023073869906529458
+2024-11-08 16:30:18,771 - INFO - Before registration: Cumulative cloud has 123241 points, Source has 39087 points.
+2024-11-08 16:30:18,885 - INFO - ICP Result for Scale 2:
+2024-11-08 16:30:18,886 - INFO -   Transformation matrix:
+[[ 0.99982152  0.00620888 -0.01784316  0.04531347]
+ [-0.00623776  0.99997932 -0.00156362 -0.01658783]
+ [ 0.01783309  0.00167464  0.99983958 -0.00799259]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:18,886 - INFO -   Fitness: 0.8578066914498141, Inlier RMSE: 0.002307386990652754
+2024-11-08 16:30:18,886 - INFO - Before registration: Cumulative cloud has 123241 points, Source has 39087 points.
+2024-11-08 16:30:19,019 - INFO - ICP Result for Scale 3:
+2024-11-08 16:30:19,020 - INFO -   Transformation matrix:
+[[ 0.99982152  0.00620888 -0.01784316  0.04531347]
+ [-0.00623776  0.99997932 -0.00156362 -0.01658783]
+ [ 0.01783309  0.00167464  0.99983958 -0.00799259]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:19,020 - INFO -   Fitness: 0.8578066914498141, Inlier RMSE: 0.0023073869906527194
+2024-11-08 16:30:19,039 - INFO - Translation of source 'Sensor_data\Scan_3_20241030_115628_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': [ 0.04531347 -0.01658783 -0.00799259]
+2024-11-08 16:30:19,039 - INFO - Rotation of source 'Sensor_data\Scan_3_20241030_115628_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': (-0.35745668863908575, -1.0218148015383872, 0.09596523764711878)
+2024-11-08 16:30:19,041 - INFO - Registering Sensor_data\Scan_1_20241030_115156_filtered.ply to Sensor_data\Scan_4_20241030_115841_filtered.ply
+2024-11-08 16:30:19,041 - INFO - Before registration: Cumulative cloud has 162328 points, Source has 33307 points.
+2024-11-08 16:30:19,180 - INFO - ICP Result for Scale 1:
+2024-11-08 16:30:19,181 - INFO -   Transformation matrix:
+[[ 9.98969188e-01  4.53256406e-02 -2.47932956e-03  3.77936786e-02]
+ [-4.53933989e-02  9.97490099e-01 -5.43409828e-02 -5.40072925e-03]
+ [ 1.00668340e-05  5.43975127e-02  9.98519359e-01 -2.77032051e-02]
+ [ 0.00000000e+00  0.00000000e+00  0.00000000e+00  1.00000000e+00]]
+2024-11-08 16:30:19,181 - INFO -   Fitness: 0.19546940681924335, Inlier RMSE: 0.0027387343107129858
+2024-11-08 16:30:19,181 - INFO - Before registration: Cumulative cloud has 162328 points, Source has 33307 points.
+2024-11-08 16:30:19,363 - INFO - ICP Result for Scale 2:
+2024-11-08 16:30:19,364 - INFO -   Transformation matrix:
+[[ 9.98972432e-01  4.52636036e-02 -2.29912748e-03  3.78154778e-02]
+ [-4.53214871e-02  9.97444846e-01 -5.52244625e-02 -5.38737650e-03]
+ [-2.06405318e-04  5.52719155e-02  9.98471318e-01 -2.80698126e-02]
+ [ 0.00000000e+00  0.00000000e+00  0.00000000e+00  1.00000000e+00]]
+2024-11-08 16:30:19,364 - INFO -   Fitness: 0.1952358710882765, Inlier RMSE: 0.002740574805913105
+2024-11-08 16:30:19,364 - INFO - Before registration: Cumulative cloud has 162328 points, Source has 33307 points.
+2024-11-08 16:30:19,513 - INFO - ICP Result for Scale 3:
+2024-11-08 16:30:19,514 - INFO -   Transformation matrix:
+[[ 9.98971219e-01  4.52889898e-02 -2.32615405e-03  3.77986051e-02]
+ [-4.53484552e-02  9.97486297e-01 -5.44481824e-02 -5.44141108e-03]
+ [-1.45596391e-04  5.44976546e-02  9.98513888e-01 -2.77207569e-02]
+ [ 0.00000000e+00  0.00000000e+00  0.00000000e+00  1.00000000e+00]]
+2024-11-08 16:30:19,515 - INFO -   Fitness: 0.1952358710882765, Inlier RMSE: 0.0027394947343006766
+2024-11-08 16:30:19,542 - INFO - Translation of source 'Sensor_data\Scan_4_20241030_115841_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': [ 0.03779861 -0.00544141 -0.02772076]
+2024-11-08 16:30:19,542 - INFO - Rotation of source 'Sensor_data\Scan_4_20241030_115841_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': (-2.5991664969806942, 0.008342058731253902, 3.124033331281643)
+2024-11-08 16:30:19,543 - INFO - Registering Sensor_data\Scan_1_20241030_115156_filtered.ply to Sensor_data\Scan_5_20241030_120116_filtered.ply
+2024-11-08 16:30:19,543 - INFO - Before registration: Cumulative cloud has 195635 points, Source has 135530 points.
+2024-11-08 16:30:19,995 - INFO - ICP Result for Scale 1:
+2024-11-08 16:30:19,996 - INFO -   Transformation matrix:
+[[ 9.98054713e-01  6.19678670e-02  6.83912562e-03  1.67093424e-04]
+ [-6.16290898e-02  9.97220202e-01 -4.18774816e-02  5.20114663e-03]
+ [-9.41517245e-03  4.13745288e-02  9.99099346e-01 -1.20801702e-02]
+ [ 0.00000000e+00  0.00000000e+00  0.00000000e+00  1.00000000e+00]]
+2024-11-08 16:30:19,996 - INFO -   Fitness: 0.873956834532374, Inlier RMSE: 0.0027650900296353796
+2024-11-08 16:30:19,996 - INFO - Before registration: Cumulative cloud has 195635 points, Source has 135530 points.
+2024-11-08 16:30:20,256 - INFO - ICP Result for Scale 2:
+2024-11-08 16:30:20,257 - INFO -   Transformation matrix:
+[[ 9.98049612e-01  6.20592262e-02  6.75456551e-03  2.36957835e-04]
+ [-6.17260859e-02  9.97224135e-01 -4.16402958e-02  5.20750589e-03]
+ [-9.31998029e-03  4.11421482e-02  9.99109835e-01 -1.19643359e-02]
+ [ 0.00000000e+00  0.00000000e+00  0.00000000e+00  1.00000000e+00]]
+2024-11-08 16:30:20,257 - INFO -   Fitness: 0.8742446043165467, Inlier RMSE: 0.002731293293836901
+2024-11-08 16:30:20,257 - INFO - Before registration: Cumulative cloud has 195635 points, Source has 135530 points.
+2024-11-08 16:30:20,501 - INFO - ICP Result for Scale 3:
+2024-11-08 16:30:20,502 - INFO -   Transformation matrix:
+[[ 9.98055282e-01  6.19592449e-02  6.83411198e-03  1.45938032e-04]
+ [-6.16190714e-02  9.97213628e-01 -4.20484260e-02  5.20901217e-03]
+ [-9.42035833e-03  4.15455421e-02  9.99092200e-01 -1.21544871e-02]
+ [ 0.00000000e+00  0.00000000e+00  0.00000000e+00  1.00000000e+00]]
+2024-11-08 16:30:20,502 - INFO -   Fitness: 0.873956834532374, Inlier RMSE: 0.002771473762864023
+2024-11-08 16:30:20,539 - INFO - Translation of source 'Sensor_data\Scan_5_20241030_120116_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': [ 0.00014594  0.00520901 -0.01215449]
+2024-11-08 16:30:20,539 - INFO - Rotation of source 'Sensor_data\Scan_5_20241030_120116_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': (-3.5329076935049004, 0.539754757441452, 2.381175241745386)
+2024-11-08 16:30:20,541 - INFO - Registering Sensor_data\Scan_1_20241030_115156_filtered.ply to Sensor_data\Scan_6_20241030_120229_filtered.ply
+2024-11-08 16:30:20,541 - INFO - Before registration: Cumulative cloud has 331165 points, Source has 38141 points.
+2024-11-08 16:30:21,751 - INFO - ICP Result for Scale 1:
+2024-11-08 16:30:21,751 - INFO -   Transformation matrix:
+[[ 0.99884278  0.04753039  0.00734629 -0.00773777]
+ [-0.04714636  0.99784065 -0.04573034  0.01539056]
+ [-0.00950401  0.04533106  0.99892681 -0.01615032]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:21,751 - INFO -   Fitness: 0.6333333333333333, Inlier RMSE: 0.0027643690946944047
+2024-11-08 16:30:21,751 - INFO - Before registration: Cumulative cloud has 331165 points, Source has 38141 points.
+2024-11-08 16:30:22,146 - INFO - ICP Result for Scale 2:
+2024-11-08 16:30:22,147 - INFO -   Transformation matrix:
+[[ 0.99886639  0.04700423  0.00751945 -0.00755749]
+ [-0.04662579  0.99792561 -0.04439036  0.01524098]
+ [-0.00959038  0.04398944  0.99898596 -0.01554904]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:22,147 - INFO -   Fitness: 0.6327235772357723, Inlier RMSE: 0.002788170447655986
+2024-11-08 16:30:22,147 - INFO - Before registration: Cumulative cloud has 331165 points, Source has 38141 points.
+2024-11-08 16:30:22,432 - INFO - ICP Result for Scale 3:
+2024-11-08 16:30:22,433 - INFO -   Transformation matrix:
+[[ 0.99886074  0.04709387  0.00770634 -0.00767769]
+ [-0.04670626  0.99791791 -0.04447887  0.01526547]
+ [-0.00978498  0.04406826  0.9989806  -0.01560591]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:22,433 - INFO -   Fitness: 0.6323170731707317, Inlier RMSE: 0.002801244519646859
+2024-11-08 16:30:22,476 - INFO - Translation of source 'Sensor_data\Scan_6_20241030_120229_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': [-0.00767769  0.01526547 -0.01560591]
+2024-11-08 16:30:22,476 - INFO - Rotation of source 'Sensor_data\Scan_6_20241030_120229_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': (-2.677173548446646, 0.5606468065703746, 2.5258641405078053)
+2024-11-08 16:30:22,478 - INFO - Registering Sensor_data\Scan_1_20241030_115156_filtered.ply to Sensor_data\Scan_7_20241030_120332_filtered.ply
+2024-11-08 16:30:22,478 - INFO - Before registration: Cumulative cloud has 369306 points, Source has 61507 points.
+2024-11-08 16:30:22,688 - INFO - ICP Result for Scale 1:
+2024-11-08 16:30:22,689 - INFO -   Transformation matrix:
+[[ 0.99636659  0.02360483  0.08183178  0.00737471]
+ [-0.01602044  0.9956181  -0.09213003  0.03169115]
+ [-0.08364791  0.0904843   0.99237877 -0.05630292]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:22,689 - INFO -   Fitness: 0.18206521739130435, Inlier RMSE: 0.0032778929729323906
+2024-11-08 16:30:22,689 - INFO - Before registration: Cumulative cloud has 369306 points, Source has 61507 points.
+2024-11-08 16:30:22,942 - INFO - ICP Result for Scale 2:
+2024-11-08 16:30:22,943 - INFO -   Transformation matrix:
+[[ 0.99657728  0.02782937  0.07784114  0.00529615]
+ [-0.02088715  0.99584667 -0.08861797  0.03027882]
+ [-0.07998402  0.08668878  0.99301944 -0.05412126]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:22,943 - INFO -   Fitness: 0.18546195652173914, Inlier RMSE: 0.0032511172983492815
+2024-11-08 16:30:22,944 - INFO - Before registration: Cumulative cloud has 369306 points, Source has 61507 points.
+2024-11-08 16:30:23,194 - INFO - ICP Result for Scale 3:
+2024-11-08 16:30:23,194 - INFO -   Transformation matrix:
+[[ 0.99622194  0.02528089  0.08308267  0.00655832]
+ [-0.01764073  0.99565446 -0.09143851  0.03178467]
+ [-0.08503327  0.08962741  0.99233879 -0.05588923]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:23,194 - INFO -   Fitness: 0.1800271739130435, Inlier RMSE: 0.0032264441977468933
+2024-11-08 16:30:23,242 - INFO - Translation of source 'Sensor_data\Scan_7_20241030_120332_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': [ 0.00655832  0.03178467 -0.05588923]
+2024-11-08 16:30:23,242 - INFO - Rotation of source 'Sensor_data\Scan_7_20241030_120332_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': (-1.0144662478729574, 4.877938278137878, 5.160915515644939)
+2024-11-08 16:30:23,244 - INFO - Registering Sensor_data\Scan_1_20241030_115156_filtered.ply to Sensor_data\Scan_8_20241030_120530_filtered.ply
+2024-11-08 16:30:23,244 - INFO - Before registration: Cumulative cloud has 430813 points, Source has 27748 points.
+2024-11-08 16:30:23,486 - INFO - ICP Result for Scale 1:
+2024-11-08 16:30:23,486 - INFO -   Transformation matrix:
+[[ 0.99448476  0.05505102  0.08927171 -0.01648779]
+ [-0.04792035  0.99563089 -0.08014224  0.02584066]
+ [-0.09329358  0.07542231  0.99277781 -0.05101817]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:23,486 - INFO -   Fitness: 0.49892141756548536, Inlier RMSE: 0.002674609327225229
+2024-11-08 16:30:23,487 - INFO - Before registration: Cumulative cloud has 430813 points, Source has 27748 points.
+2024-11-08 16:30:23,699 - INFO - ICP Result for Scale 2:
+2024-11-08 16:30:23,701 - INFO -   Transformation matrix:
+[[ 0.99447686  0.05508387  0.08933945 -0.01650498]
+ [-0.04793404  0.99561819 -0.08029165  0.02587309]
+ [-0.09337076  0.07556579  0.99275964 -0.05107916]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:23,701 - INFO -   Fitness: 0.49861325115562405, Inlier RMSE: 0.002673086728485502
+2024-11-08 16:30:23,701 - INFO - Before registration: Cumulative cloud has 430813 points, Source has 27748 points.
+2024-11-08 16:30:23,993 - INFO - ICP Result for Scale 3:
+2024-11-08 16:30:23,994 - INFO -   Transformation matrix:
+[[ 0.99447672  0.05508515  0.08934026 -0.01650607]
+ [-0.04792659  0.99561111 -0.08038382  0.02587327]
+ [-0.09337611  0.07565807  0.99275211 -0.05109431]
+ [ 0.          0.          0.          1.        ]]
+2024-11-08 16:30:23,994 - INFO -   Fitness: 0.49861325115562405, Inlier RMSE: 0.0026728312132077957
+2024-11-08 16:30:24,048 - INFO - Translation of source 'Sensor_data\Scan_8_20241030_120530_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': [-0.01650607  0.02587327 -0.05109431]
+2024-11-08 16:30:24,048 - INFO - Rotation of source 'Sensor_data\Scan_8_20241030_120530_filtered.ply' compared to target 'Sensor_data\Scan_1_20241030_115156_filtered.ply': (-2.759107666635579, 5.3578624793709695, 4.358111833619513)
+2024-11-08 16:30:24,154 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\3_registered.ply
+2024-11-08 16:30:25,144 - INFO - Visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Registered.png
+2024-11-08 16:30:25,185 - INFO - 
+Downsampling point clouds with voxel size 0.005
+2024-11-08 16:30:25,235 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\4_downsampled.ply
+2024-11-08 16:30:26,484 - INFO - Visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Downsampled.png
+2024-11-08 16:30:26,589 - INFO - centroid: [0.  0.4 0. ]
+2024-11-08 16:30:26,591 - INFO - Clustering point cloud based on normals
+2024-11-08 16:30:28,967 - INFO - Optimal k-clusters: 4
+2024-11-08 16:30:29,000 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\5_cluster_kmeans\cluster_kmeans_0.ply
+2024-11-08 16:30:29,005 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\5_cluster_kmeans\cluster_kmeans_1.ply
+2024-11-08 16:30:29,008 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\5_cluster_kmeans\cluster_kmeans_2.ply
+2024-11-08 16:30:29,012 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\5_cluster_kmeans\cluster_kmeans_3.ply
+2024-11-08 16:30:30,027 - INFO - Visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\K-means_clustered.png
+2024-11-08 16:30:30,057 - INFO - Clustering point cloud based on normals
+2024-11-08 16:30:30,229 - INFO - Optimal k-clusters: 3
+2024-11-08 16:30:30,403 - INFO - Optimal k-clusters: 4
+2024-11-08 16:30:30,530 - INFO - Optimal k-clusters: 3
+2024-11-08 16:30:30,666 - INFO - Optimal k-clusters: 3
+2024-11-08 16:30:30,679 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\6_cluster_kmeans\cluster_kmeans_0.ply
+2024-11-08 16:30:30,682 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\6_cluster_kmeans\cluster_kmeans_1.ply
+2024-11-08 16:30:30,685 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\6_cluster_kmeans\cluster_kmeans_2.ply
+2024-11-08 16:30:30,698 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\6_cluster_kmeans\cluster_kmeans_3.ply
+2024-11-08 16:30:31,629 - INFO - Visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\K-means_outlier_removal.png
+2024-11-08 16:30:31,654 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\7_translated\translated_0.ply
+2024-11-08 16:30:31,656 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\7_translated\translated_1.ply
+2024-11-08 16:30:31,659 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\7_translated\translated_2.ply
+2024-11-08 16:30:31,661 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\7_translated\translated_3.ply
+2024-11-08 16:30:31,675 - INFO - Using the latest facade order file: 20241030_facade_order.csv
+2024-11-08 16:30:31,733 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\model_mesh\model_mesh_0.ply
+2024-11-08 16:30:31,735 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\model_mesh\model_mesh_1.ply
+2024-11-08 16:30:31,738 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\model_mesh\model_mesh_2.ply
+2024-11-08 16:30:31,742 - INFO - Saved: Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\model_mesh\model_mesh_3.ply
+2024-11-08 16:30:32,542 - INFO - Point cloud and mesh visualization saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Check_translated_pcd.png
+2024-11-08 16:30:32,581 - INFO - Pairing the right point cloud to mesh
+2024-11-08 16:30:32,582 - INFO - Mesh 0 matches the cluster 0 with an alignment of 0.99
+2024-11-08 16:30:32,584 - INFO - Mesh 1 matches the cluster 2 with an alignment of 0.96
+2024-11-08 16:30:32,586 - INFO - Mesh 2 matches the cluster 1 with an alignment of 0.90
+2024-11-08 16:30:32,587 - INFO - Mesh 3 matches the cluster 3 with an alignment of 0.95
+2024-11-08 16:30:32,588 - INFO - Checking which bricks are built
+2024-11-08 16:30:32,591 - INFO - Wall 0 - number of bricks in model: 60
+2024-11-08 16:30:32,776 - INFO - Wall 1 - number of bricks in model: 28
+2024-11-08 16:30:32,811 - INFO - Wall 2 - number of bricks in model: 60
+2024-11-08 16:30:33,012 - INFO - Wall 3 - number of bricks in model: 28
+2024-11-08 16:30:33,068 - INFO - - Number of bricks built: 30
+2024-11-08 16:30:33,069 - INFO - - Number of bricks not built: 30
+2024-11-08 16:30:33,069 - INFO - - Progress: 50.0 %
+2024-11-08 16:30:33,069 - INFO - - Number of bricks built: 16
+2024-11-08 16:30:33,069 - INFO - - Number of bricks not built: 12
+2024-11-08 16:30:33,069 - INFO - - Progress: 57.14 %
+2024-11-08 16:30:33,069 - INFO - - Number of bricks built: 55
+2024-11-08 16:30:33,069 - INFO - - Number of bricks not built: 5
+2024-11-08 16:30:33,069 - INFO - - Progress: 91.67 %
+2024-11-08 16:30:33,069 - INFO - - Number of bricks built: 26
+2024-11-08 16:30:33,069 - INFO - - Number of bricks not built: 2
+2024-11-08 16:30:33,069 - INFO - - Progress: 92.86 %
+2024-11-08 16:30:33,069 - INFO - The total progress: 72.16 %
+2024-11-08 16:30:34,582 - INFO - Results saved as Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Results.png
+2024-11-08 16:30:34,619 - INFO - - Number of bricks built: 30
+2024-11-08 16:30:34,620 - INFO - - Number of bricks not built: 30
+2024-11-08 16:30:34,620 - INFO - - Progress: 50.0 %
+2024-11-08 16:30:34,620 - INFO - - Number of bricks built: 16
+2024-11-08 16:30:34,620 - INFO - - Number of bricks not built: 12
+2024-11-08 16:30:34,620 - INFO - - Progress: 57.14 %
+2024-11-08 16:30:34,620 - INFO - - Number of bricks built: 55
+2024-11-08 16:30:34,620 - INFO - - Number of bricks not built: 5
+2024-11-08 16:30:34,620 - INFO - - Progress: 91.67 %
+2024-11-08 16:30:34,620 - INFO - - Number of bricks built: 26
+2024-11-08 16:30:34,620 - INFO - - Number of bricks not built: 2
+2024-11-08 16:30:34,620 - INFO - - Progress: 92.86 %
+2024-11-08 16:30:34,620 - INFO - The total progress: 72.16 %
+2024-11-08 16:30:34,624 - INFO - Results written to Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Results.csv

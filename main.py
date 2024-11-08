@@ -5,9 +5,9 @@ import constants as c
 def main():
     """
     Uncomment the first code part for the first run.
-    Colorizing the Sensor_data takes a long time, therefore the results will be stored in a separate folder to be able to be re-used.
+    Colorizing the scans takes a long time, therefore the results will be stored in a separate folder to be able to be re-used.
     """
-    # Create an instance of the point cloud
+    # # Create an instance of the point cloud
     # pcd = PointCloud()
     # pcd.load_pcd(ply_dir=c.SCAN_DIR)
     # pcd.visualize(title='Scans', save_as_png=True)
@@ -19,17 +19,11 @@ def main():
     """
     Uncomment the rest of the code after the first run. 
     This can be run several times with using the same colorized files.
-    
-    Optional extra visualisations: GIF which visualize the separate Sensor_data normal and colorized. 
     """
-    # gif('Sensor_data', title='Scan')
-
-    # gif('colorized', title='Colorized scan')
-
     # Create an instance of the point cloud
     pcd = PointCloud()
     pcd.load_pcd(ply_dir=c.COLORIZED_DIR)
-    # pcd.visualize(title='Colorized loaded pcd', save_as_png=True)
+    pcd.visualize(title='Colorized loaded pcd', save_as_png=True)
 
     # Translate and orientate the point cloud to the same place as the model
     pcd.translate_orientate()
