@@ -40,7 +40,17 @@ ax.add_patch(wall_rect)
 adjusted_path_x = []
 adjusted_path_y = []
 
-# Function to determine avoidance maneuver based on obstacle position
+'''
+Function: avoid_obstacle
+Purpose: Determines the avoidance path based on the position of an obstacle relative to the masonry wall.
+Parameters:
+    - x (float)
+    - y (float)
+Returns:
+    - tuple: A tuple containing two lists of coordinates (adjusted_x, adjusted_y) for the avoidance path.
+            - adjusted_x (list): The x-coordinates of the adjusted path.
+            - adjusted_y (list): The y-coordinates of the adjusted path.
+'''
 def avoid_obstacle(x, y):
     # Determine the path based on the obstacle's position relative to the defined route
     if y < wall_bottom:  # Obstacle on the bottom horizontal line
