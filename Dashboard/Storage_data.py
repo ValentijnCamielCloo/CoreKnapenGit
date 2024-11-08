@@ -1,6 +1,20 @@
 import matplotlib.pyplot as plt
 
 def plot_storage_data(data):
+    '''
+    This function visualizes the storage capacity of the robot by creating a horizontal bar chart showing 
+    the amount of used and available storage based on the input DataFrame.
+
+    Parameters:
+    data (pd.DataFrame): A Pandas DataFrame with the following columns:
+                         - 'Total Storage (GB)' (float or integer): Total storage capacity of the robot in GB.
+                         - 'Used Storage (GB)' (float or integer): Currently used storage in GB.
+
+    Returns:
+    fig (matplotlib.figure.Figure): A matplotlib figure containing a horizontal bar chart representing 
+                                    used and available storage with labels and color coding.
+    '''
+
     # Extract storage data from the DataFrame
     total_storage = data['Total Storage (GB)'].iloc[0]
     used_storage = data['Used Storage (GB)'].iloc[0]
