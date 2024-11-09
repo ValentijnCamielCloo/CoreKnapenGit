@@ -2,6 +2,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def plot_prognosis(data):
+    '''
+    This function visualizes the progress of wall construction by creating bar charts and text displays 
+    for each wall. It shows the percentage of completed work, the remaining work, and the number of bricks 
+    built versus the number of bricks left to be built for each wall.
+
+    Parameters:
+    data (str or pandas.DataFrame): The input data. If a string, it should be the file path of a CSV file 
+                                    containing the data. The CSV should have the following columns:
+                                    'Wall', 'Percentage Completed', 'Total Percentage', 
+                                    'Bricks Built', 'Bricks to be Built'.
+
+    Returns:
+    matplotlib.figure.Figure: A matplotlib figure object that contains the visualizations.
+    '''
+    
     # Ensure that data is a DataFrame
     if isinstance(data, str):
         try:
@@ -46,7 +61,7 @@ def plot_prognosis(data):
         ax_bar.set_xlabel('Percentage (%)', fontsize=12)
         ax_bar.set_xlim(0, total_percentage)
         ax_bar.grid(True, axis='x', linestyle='--')
-        ax_bar.set_yticks([])
+        ax_bar.set_yticks([])  # Hide y-axis ticks
         ax_bar.legend(loc='center', bbox_to_anchor=(0.5, -0.3), ncol=2)
 
         # Text display (bricks) - Right column
