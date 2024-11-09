@@ -308,3 +308,13 @@ Downsampling point clouds with voxel size 0.005
 2024-11-08 16:30:34,620 - INFO - - Progress: 92.86 %
 2024-11-08 16:30:34,620 - INFO - The total progress: 72.16 %
 2024-11-08 16:30:34,624 - INFO - Results written to Data_modeling/ProgressPilot\ProgressPilot_8_20241108_163008\Results.csv
+2024-11-09 11:41:58,957 - INFO - Main directory created: Data_modeling/ProgressPilot
+2024-11-09 11:41:58,960 - INFO - Output directory created: Data_modeling/ProgressPilot\ProgressPilot_1_20241109_114158
+2024-11-09 11:41:59,085 - INFO - Loading point cloud: colorized_0.ply
+2024-11-09 11:41:59,206 - INFO - Loading point cloud: colorized_1.ply
+2024-11-09 11:41:59,378 - INFO - Loading point cloud: colorized_2.ply
+2024-11-09 11:41:59,508 - INFO - Loading point cloud: colorized_3.ply
+2024-11-09 11:41:59,607 - INFO - Loading point cloud: colorized_4.ply
+2024-11-09 11:41:59,677 - INFO - Loading point cloud: colorized_5.ply
+2024-11-09 11:41:59,765 - INFO - Loading point cloud: colorized_6.ply
+2024-11-09 11:41:59,873 - INFO - Loading point cloud: colorized_7.ply
