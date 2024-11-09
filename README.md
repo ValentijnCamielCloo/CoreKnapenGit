@@ -51,7 +51,8 @@ Note: This could should be run indivudally due to limitations with importing csv
 
 ## Installation 
 
-To set up your environment, first install the required dependencies using the `requirements.txt` file:
+To set up your environment, first make sure you have Python version <= 3.11. 
+Than install the required dependencies using the `requirements.txt` file:
 
 ```bash
 pip install -r requirements.txt
